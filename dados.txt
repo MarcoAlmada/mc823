@@ -1,0 +1,17 @@
+ 0470068523
+The book is a security design manual for embedded systems, the only one of its kind, thought to be a seminal work and controversial in high-level circles because because of the powerful algorithms presented within. The author gets right to providing the crucial do's and don'ts of creating high quality security software that works to prevent all manner of security breaches. The revisions and updates include more than 200 new pages on Vista, Xen, phishing, Google issues, declassified military doctrine, 'Richard Clarke issues,' Skype, mobile fraud, music security issues, antitrust issues, and more.
+200
+Security Engineering
+Ross J. Anderson
+John Wiley Professional
+2008
+#
+0131429388
+Revised to address the latest version of MINIX (MINIX 3), this streamlined, simplified new edition remains the only operating systems text to first explain relevant principles, then demonstrate their applications using a Unix-like operating system as a detailed example. It has been especially designed for high reliability, for use in embedded systems, and for ease of teaching.
+10
+OPERATING SYSTEMS DESIGN AND IMPLEMENTATION
+TANENBAUM, ANDREW S.
+PRENTICE HALL
+2005
+#
+
