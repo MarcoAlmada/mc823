@@ -84,6 +84,7 @@ int main(int argc, char *argv[])
 	char msg[MAXDATASIZE];
 	char pass[20];
 	int bytes_sent, len, bytes_rcv;
+	
 	while(1){
 		//pseudo user interface
 		printf("Escolha uma opcao:\n");
@@ -93,7 +94,9 @@ int main(int argc, char *argv[])
 		printf("4- listar todas as informacoes de todos os livros\n");
 		printf("5- alterar numero de exemplares em estoque\n");
 		printf("6- dado o ISBN de um livro, retornar numero de exemplares em estoque\n");
+		printf("7- fechar cliente\n");
 		scanf("%d", &opt);
+		if(opt == 7) break;
 		if(opt == 5){
 			printf("Digite a senha\n");
 			scanf(" %s", pass);
