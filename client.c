@@ -79,8 +79,9 @@ int main(int argc, char *argv[])
     freeaddrinfo(servinfo); // all done with this structure
 	
 	int opt, cont;
-	int ISBN[20] = "";
-	char msg[MAXDATASIZE], buf[MAXDATASIZE];
+	int ISBN[20];
+	ISBN[0] = '\0';
+	char msg[MAXDATASIZE];
 	int bytes_sent, len, bytes_rcv;
 	while(1){
 		//pseudo user interface
