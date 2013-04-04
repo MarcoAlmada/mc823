@@ -82,6 +82,7 @@ int main(int argc, char *argv[])
 	int ISBN[20];
 	ISBN[0] = '\0';
 	char msg[MAXDATASIZE];
+	char pass[20];
 	int bytes_sent, len, bytes_rcv;
 	while(1){
 		//pseudo user interface
@@ -93,6 +94,12 @@ int main(int argc, char *argv[])
 		printf("5- alterar numero de exemplares em estoque\n");
 		printf("6- dado o ISBN de um livro, retornar numero de exemplares em estoque\n");
 		scanf("%d", &opt);
+		if(opt == 5){
+			printf("Digite a senha\n");
+			scanf(" %s", pass);
+			if(strcmp(pass, "senhalivraria") != 0)
+			continue;
+		}
 		if(opt == 2 || opt == 3 || opt == 5 || opt == 6){
 			printf("Digite o ISBN\n");
 			scanf(" %s", ISBN);
