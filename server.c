@@ -19,6 +19,8 @@
 
 #define BACKLOG 10	 // how many pending connections queue will hold
 
+#define MAXDATASIZE 1000 // max number of bytes we can get at once 
+
 void sigchld_handler(int s)
 {
 	while(waitpid(-1, NULL, WNOHANG) > 0);
@@ -100,6 +102,11 @@ int main(void)
 
 	printf("server: waiting for connections...\n");
 
+	int bytes_rcv;
+	char buf[MAXDATASIZE];
+	int opt, cont;
+	int ISBN[20];
+	FILE *db = fopen("dados.txt", "rw");
 	while(1) {  // main accept() loop
 		sin_size = sizeof their_addr;
 		new_fd = accept(sockfd, (struct sockaddr *)&their_addr, &sin_size);
@@ -115,8 +122,23 @@ int main(void)
 
 		if (!fork()) { // this is the child process
 			close(sockfd); // child doesn't need the listener
-			if (send(new_fd, "Hello, world!", 13, 0) == -1)
-				perror("send");
+			
+			//LOOP QUE PROCESSA REQUISICOES
+		/**/while(1){
+				if ((bytes_rcv = recv(new_fd, buf, MAXDATASIZE-1, 0)) == -1) {
+		       		perror("erro no recv");
+		        	break;
+		    	}
+		    	sscanf(buf, "%d %s", &opt, ISBN);
+		    	
+		    	if(opt == 1){
+		    	
+		    	}
+		    	
+				if (send(new_fd, "Hello, world!", 13, 0) == -1)
+					perror("send");
+		/**/}
+			
 			close(new_fd);
 			exit(0);
 		}
