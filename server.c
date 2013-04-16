@@ -144,7 +144,7 @@ int main(void)
 	int bytes_rcv;
 	char buf[MAXDATASIZE];
 	int opt, cont;
-	int ISBN[20];
+	char ISBN[20];
 	FILE *db = fopen("dados.txt", "rw");
 	while(1) {  // main accept() loop
 		sin_size = sizeof their_addr;
@@ -174,8 +174,7 @@ int main(void)
 		    	sscanf(buf, "%d", &opt);
 		    	
 		    	if(opt == 1){
-		    	printf("%d\n", opt);
-		    	bufs[0] = '\0';
+		    		bufs[0] = '\0';
 		    		strcat(bufs, "0 ");
 		    		for(i = 0; i < total_livros; ++i){
 		    			strcat(bufs, biblioteca[i].ISBN);
@@ -183,19 +182,70 @@ int main(void)
 		    			strcat(bufs, biblioteca[i].titulo);
 		    		}
 		    	}
-		    	/*if(opt == 1){
 		    	
+		    	if(opt == 2){
+		    		bufs[0] = '\0';
+		    		strcat(bufs, "0 ");
+		    		sscanf(buf, "%d %s", &opt, ISBN);
+		    		for(i = 0; i < total_livros; ++i){
+		    			if(strcmp(biblioteca[i].ISBN, ISBN) == 0){
+		    				strcat(bufs, biblioteca[i].descricao);
+		    				break;
+		    			}		    				
+		    		}
 		    	}
-		    	if(opt == 1){
 		    	
+		    	if(opt == 3){
+		    		bufs[0] = '\0';
+		    		strcat(bufs, "0 ");
+		    		sscanf(buf, "%d %s", &opt, ISBN);
+		    		for(i = 0; i < total_livros; ++i){
+		    			if(strcmp(biblioteca[i].ISBN, ISBN) == 0){
+		    				strcat(bufs, biblioteca[i].ISBN);
+		    				strcat(bufs, biblioteca[i].titulo);
+		    				strcat(bufs, biblioteca[i].descricao);
+		    				sprintf(aux, "%d\n\0", biblioteca[i].estoque);
+		    				strcat(bufs, aux);
+		    				strcat(bufs, biblioteca[i].autor);
+		    				strcat(bufs, biblioteca[i].editora);
+		    				sprintf(aux, "%d\n\0", biblioteca[i].ano);
+		    				strcat(bufs, aux);
+		    				break;
+		    			}		    				
+		    		}
 		    	}
-		    	if(opt == 1){
 		    	
+		    	if(opt == 4){
+		    		bufs[0] = '\0';
+		    		sprintf(aux, "%d \0", total_livros);
+		    		strcat(bufs, aux);
+		    		for(i = 0; i < total_livros; ++i){
+	    				strcat(bufs, biblioteca[i].ISBN);
+	    				strcat(bufs, biblioteca[i].titulo);
+	    				strcat(bufs, biblioteca[i].descricao);
+	    				sprintf(aux, "%d\n\0", biblioteca[i].estoque);
+	    				strcat(bufs, aux);
+	    				strcat(bufs, biblioteca[i].autor);
+	    				strcat(bufs, biblioteca[i].editora);
+	    				sprintf(aux, "%d\n\0", biblioteca[i].ano);
+	    				strcat(bufs, aux);		    				
+		    		}
 		    	}
-		    	if(opt == 1){
 		    	
+		    	if(opt == 6){
+		    		bufs[0] = '\0';
+		    		strcat(bufs, "0 ");
+		    		sscanf(buf, "%d %s", &opt, ISBN);
+		    		for(i = 0; i < total_livros; ++i){
+		    			if(strcmp(biblioteca[i].ISBN, ISBN) == 0){
+		    				sprintf(aux, "%d\n\0", biblioteca[i].estoque);
+	    					strcat(bufs, aux);
+		    				break;
+		    			}		    				
+		    		}
 		    	}
-		    	if(opt == 1){
+		    	
+		    	/*if(opt == 5){
 		    	
 		    	}*/
 		    	printf("%s", bufs);
