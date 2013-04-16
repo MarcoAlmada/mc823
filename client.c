@@ -83,6 +83,8 @@ int main(int argc, char *argv[])
 	ISBN[0] = '\0';
 	char msg[MAXDATASIZE];
 	char pass[20];
+        char treco[MAXDATASIZE];
+	char it;
 	int bytes_sent, len, bytes_rcv;
 	
 	while(1){
@@ -127,9 +129,15 @@ int main(int argc, char *argv[])
 		        perror("erro no recv");
 		        break;
 		    }
-		    sscanf(buf, "%d %s", &cont, msg);
+		    sscanf(buf, "%d", &cont);
+		    printf("%s", buf+2);
+/*		    it = 'c';	
+		    while (it != '\0'){
+			sscanf(buf, "%c", it);
+			printf("%c", it);
+		    }
 		    printf("%s", msg);
-		    if(cont == 0) break;
+		    if(cont == 0) break;*/
 		}
 		
 		//pega tempo final
