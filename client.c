@@ -11,7 +11,7 @@
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
-
+#include <sys/time.h>
 #include <arpa/inet.h>
 
 #define PORT "3490" // the port client will be connecting to 
@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
     freeaddrinfo(servinfo); // all done with this structure
 	
 	int opt, cont;
-	int ISBN[20];
+	char ISBN[20];
 	ISBN[0] = '\0';
 	char msg[MAXDATASIZE];
 	char pass[20];
@@ -110,6 +110,11 @@ int main(int argc, char *argv[])
 		
 		//escreve requisicao
 		sprintf(msg, "%d %s", opt, ISBN);
+		
+		//pega tempo inicial
+		struct timeval tempo_in, tempo_fim;
+		gettimeofday(&tempo_in, NULL);
+		
 		len = strlen(msg);
 		if((bytes_sent = send(sockfd, msg, len, 0)) != len){
 			printf("erro no send\n");
@@ -126,6 +131,13 @@ int main(int argc, char *argv[])
 		    printf("%s", msg);
 		    if(cont == 0) break;
 		}
+		
+		//pega tempo final
+		gettimeofday(&tempo_fim, NULL);
+		double tempo1, tempo2;
+		tempo1 = tempo_in.tv_sec + tempo_in.tv_usec;
+		tempo2 = tempo_fim.tv_sec + tempo_fim.tv_usec;
+		printf("\nTempo total: %lf\n", tempo2-tempo1);
 	}
 
     close(sockfd);
