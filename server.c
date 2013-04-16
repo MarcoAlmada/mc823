@@ -175,10 +175,15 @@ int main(void)
 		    	
 		    	if(opt == 1){
 		    	printf("%d\n", opt);
-		    		for(i = 0; i < total_livros; ++i)
-		    			printf("%s %s\n", biblioteca[i].ISBN, biblioteca[i].titulo);
+		    	bufs[0] = '\0';
+		    		strcat(bufs, "0 ");
+		    		for(i = 0; i < total_livros; ++i){
+		    			strcat(bufs, biblioteca[i].ISBN);
+		    			strcat(bufs, " ");
+		    			strcat(bufs, biblioteca[i].titulo);
+		    		}
 		    	}
-		    	if(opt == 1){
+		    	/*if(opt == 1){
 		    	
 		    	}
 		    	if(opt == 1){
@@ -192,9 +197,9 @@ int main(void)
 		    	}
 		    	if(opt == 1){
 		    	
-		    	}
-		    	
-				if (send(new_fd, "Hello, world!", 13, 0) == -1)
+		    	}*/
+		    	printf("%s", bufs);
+				if (send(new_fd, bufs, sizeof(bufs), 0) == -1)
 					perror("send");
 		/**/}
 			
