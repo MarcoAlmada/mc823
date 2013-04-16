@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
 		        break;
 		    }
 		    sscanf(buf, "%d %s", &cont, msg);
-		    printf("%s", msg);
+		    printf("%s", msg+2);
 		    if(cont == 0) break;
 		}
 		
