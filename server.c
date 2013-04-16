@@ -24,7 +24,7 @@
 #define MAXBIBSIZE 10
 
 struct livro{
-	char ISBN[10];
+	char ISBN[14];
 	char titulo[1000];
 	char descricao[100123];
 	int estoque;
@@ -120,22 +120,24 @@ int main(void)
 	FILE *dados = fopen("dados.txt", "r");
 	int i = 0, j;
 	while(!feof(dados) ){
-		fgets(aux, MAXDATASIZE, dados);
-		strcpy(biblioteca[i].ISBN, aux);
-		fgets(aux, MAXDATASIZE, dados);
-		strcpy(biblioteca[i].titulo, aux);
-		fgets(aux, MAXDATASIZE, dados);
-		strcpy(biblioteca[i].descricao, aux);
+		fgets(biblioteca[i].ISBN, 11, dados);
+		fgetc(dados);
+		
+		fgets(biblioteca[i].titulo, 101, dados);
+		printf("%s \n", biblioteca[i].titulo);
+		fgets(biblioteca[i].descricao, MAXDATASIZE, dados);
+		
 		fgets(aux, MAXDATASIZE, dados);
 		biblioteca[i].estoque = atoi(aux);
-		fgets(aux, MAXDATASIZE, dados);
-		strcpy(biblioteca[i].autor, aux);
-		fgets(aux, MAXDATASIZE, dados);
-		strcpy(biblioteca[i].editora, aux);
+		
+		fgets(biblioteca[i].autor, MAXDATASIZE, dados);
+		
+		fgets(biblioteca[i].editora, MAXDATASIZE, dados);
+		
 		fgets(aux, MAXDATASIZE, dados);
 		biblioteca[i].ano = atoi(aux);
-		fgets(aux, MAXDATASIZE, dados);
 		i++;
+		
 	}
 	int total_livros = i;
 	
@@ -172,8 +174,9 @@ int main(void)
 		    	sscanf(buf, "%d", &opt);
 		    	
 		    	if(opt == 1){
+		    	printf("%d\n", opt);
 		    		for(i = 0; i < total_livros; ++i)
-		    			sprintf("%s %s\n", biblioteca[i].ISBN, biblioteca[i].titulo);
+		    			printf("%s %s\n", biblioteca[i].ISBN, biblioteca[i].titulo);
 		    	}
 		    	if(opt == 1){
 		    	
