@@ -19,7 +19,19 @@
 
 #define BACKLOG 10	 // how many pending connections queue will hold
 
-#define MAXDATASIZE 1000 // max number of bytes we can get at once 
+#define MAXDATASIZE 200123 // max number of bytes we can get at once
+
+#define MAXBIBSIZE 10
+
+struct livro{
+	char ISBN[10];
+	char titulo[1000];
+	char descricao[100123];
+	int estoque;
+	char autor[100];
+	char editora[100];
+	int ano;
+};
 
 void sigchld_handler(int s)
 {
@@ -102,6 +114,31 @@ int main(void)
 
 	printf("server: waiting for connections...\n");
 
+	//preprocessamento
+	struct livro biblioteca[MAXBIBSIZE];
+	char aux[100123];
+	FILE *dados = fopen("dados.txt", "r");
+	int i = 0, j;
+	while(!feof(dados) ){
+		fgets(aux, MAXDATASIZE, dados);
+		strcpy(biblioteca[i].ISBN, aux);
+		fgets(aux, MAXDATASIZE, dados);
+		strcpy(biblioteca[i].titulo, aux);
+		fgets(aux, MAXDATASIZE, dados);
+		strcpy(biblioteca[i].descricao, aux);
+		fgets(aux, MAXDATASIZE, dados);
+		biblioteca[i].estoque = atoi(aux);
+		fgets(aux, MAXDATASIZE, dados);
+		strcpy(biblioteca[i].autor, aux);
+		fgets(aux, MAXDATASIZE, dados);
+		strcpy(biblioteca[i].editora, aux);
+		fgets(aux, MAXDATASIZE, dados);
+		biblioteca[i].ano = atoi(aux);
+		fgets(aux, MAXDATASIZE, dados);
+		i++;
+	}
+	int total_livros = i;
+	
 	int bytes_rcv;
 	char buf[MAXDATASIZE];
 	int opt, cont;
@@ -124,13 +161,32 @@ int main(void)
 			close(sockfd); // child doesn't need the listener
 			
 			//LOOP QUE PROCESSA REQUISICOES
+			char bufs[MAXDATASIZE];
+			
+			
 		/**/while(1){
 				if ((bytes_rcv = recv(new_fd, buf, MAXDATASIZE-1, 0)) == -1) {
 		       		perror("erro no recv");
 		        	break;
 		    	}
-		    	sscanf(buf, "%d %s", &opt, ISBN);
+		    	sscanf(buf, "%d", &opt);
 		    	
+		    	if(opt == 1){
+		    		for(i = 0; i < total_livros; ++i)
+		    			sprintf("%s %s\n", biblioteca[i].ISBN, biblioteca[i].titulo);
+		    	}
+		    	if(opt == 1){
+		    	
+		    	}
+		    	if(opt == 1){
+		    	
+		    	}
+		    	if(opt == 1){
+		    	
+		    	}
+		    	if(opt == 1){
+		    	
+		    	}
 		    	if(opt == 1){
 		    	
 		    	}
