@@ -19,7 +19,19 @@
 
 #define BACKLOG 10	 // how many pending connections queue will hold
 
-#define MAXDATASIZE 1000 // max number of bytes we can get at once 
+#define MAXDATASIZE 200123 // max number of bytes we can get at once
+
+#define MAXBIBSIZE 10
+
+struct livro{
+	char ISBN[14];
+	char titulo[1000];
+	char descricao[100123];
+	int estoque;
+	char autor[100];
+	char editora[100];
+	int ano;
+};
 
 void sigchld_handler(int s)
 {
@@ -102,10 +114,37 @@ int main(void)
 
 	printf("server: waiting for connections...\n");
 
+	//preprocessamento
+	struct livro biblioteca[MAXBIBSIZE];
+	char aux[100123];
+	FILE *dados = fopen("dados.txt", "r");
+	int i = 0, j;
+	while(!feof(dados) ){
+		fgets(biblioteca[i].ISBN, 11, dados);
+		fgetc(dados);
+		
+		fgets(biblioteca[i].titulo, 101, dados);
+		printf("%s \n", biblioteca[i].titulo);
+		fgets(biblioteca[i].descricao, MAXDATASIZE, dados);
+		
+		fgets(aux, MAXDATASIZE, dados);
+		biblioteca[i].estoque = atoi(aux);
+		
+		fgets(biblioteca[i].autor, MAXDATASIZE, dados);
+		
+		fgets(biblioteca[i].editora, MAXDATASIZE, dados);
+		
+		fgets(aux, MAXDATASIZE, dados);
+		biblioteca[i].ano = atoi(aux);
+		i++;
+		
+	}
+	int total_livros = i;
+	
 	int bytes_rcv;
 	char buf[MAXDATASIZE];
 	int opt, cont;
-	int ISBN[20];
+	char ISBN[20];
 	FILE *db = fopen("dados.txt", "rw");
 	while(1) {  // main accept() loop
 		sin_size = sizeof their_addr;
@@ -124,18 +163,93 @@ int main(void)
 			close(sockfd); // child doesn't need the listener
 			
 			//LOOP QUE PROCESSA REQUISICOES
+			char bufs[MAXDATASIZE];
+			
+			
 		/**/while(1){
 				if ((bytes_rcv = recv(new_fd, buf, MAXDATASIZE-1, 0)) == -1) {
 		       		perror("erro no recv");
 		        	break;
 		    	}
-		    	sscanf(buf, "%d %s", &opt, ISBN);
+		    	sscanf(buf, "%d", &opt);
 		    	
 		    	if(opt == 1){
-		    	
+		    		bufs[0] = '\0';
+		    		strcat(bufs, "0 ");
+		    		for(i = 0; i < total_livros; ++i){
+		    			strcat(bufs, biblioteca[i].ISBN);
+		    			strcat(bufs, " ");
+		    			strcat(bufs, biblioteca[i].titulo);
+		    		}
 		    	}
 		    	
-				if (send(new_fd, "Hello, world!", 13, 0) == -1)
+		    	if(opt == 2){
+		    		bufs[0] = '\0';
+		    		strcat(bufs, "0 ");
+		    		sscanf(buf, "%d %s", &opt, ISBN);
+		    		for(i = 0; i < total_livros; ++i){
+		    			if(strcmp(biblioteca[i].ISBN, ISBN) == 0){
+		    				strcat(bufs, biblioteca[i].descricao);
+		    				break;
+		    			}		    				
+		    		}
+		    	}
+		    	
+		    	if(opt == 3){
+		    		bufs[0] = '\0';
+		    		strcat(bufs, "0 ");
+		    		sscanf(buf, "%d %s", &opt, ISBN);
+		    		for(i = 0; i < total_livros; ++i){
+		    			if(strcmp(biblioteca[i].ISBN, ISBN) == 0){
+		    				strcat(bufs, biblioteca[i].ISBN);
+		    				strcat(bufs, biblioteca[i].titulo);
+		    				strcat(bufs, biblioteca[i].descricao);
+		    				sprintf(aux, "%d\n\0", biblioteca[i].estoque);
+		    				strcat(bufs, aux);
+		    				strcat(bufs, biblioteca[i].autor);
+		    				strcat(bufs, biblioteca[i].editora);
+		    				sprintf(aux, "%d\n\0", biblioteca[i].ano);
+		    				strcat(bufs, aux);
+		    				break;
+		    			}		    				
+		    		}
+		    	}
+		    	
+		    	if(opt == 4){
+		    		bufs[0] = '\0';
+		    		sprintf(aux, "%d \0", total_livros);
+		    		strcat(bufs, aux);
+		    		for(i = 0; i < total_livros; ++i){
+	    				strcat(bufs, biblioteca[i].ISBN);
+	    				strcat(bufs, biblioteca[i].titulo);
+	    				strcat(bufs, biblioteca[i].descricao);
+	    				sprintf(aux, "%d\n\0", biblioteca[i].estoque);
+	    				strcat(bufs, aux);
+	    				strcat(bufs, biblioteca[i].autor);
+	    				strcat(bufs, biblioteca[i].editora);
+	    				sprintf(aux, "%d\n\0", biblioteca[i].ano);
+	    				strcat(bufs, aux);		    				
+		    		}
+		    	}
+		    	
+		    	if(opt == 6){
+		    		bufs[0] = '\0';
+		    		strcat(bufs, "0 ");
+		    		sscanf(buf, "%d %s", &opt, ISBN);
+		    		for(i = 0; i < total_livros; ++i){
+		    			if(strcmp(biblioteca[i].ISBN, ISBN) == 0){
+		    				sprintf(aux, "%d\n\0", biblioteca[i].estoque);
+	    					strcat(bufs, aux);
+		    				break;
+		    			}		    				
+		    		}
+		    	}
+		    	
+		    	/*if(opt == 5){
+		    	
+		    	}*/
+		    	printf("%s", bufs);
+				if (send(new_fd, bufs, sizeof(bufs), 0) == -1)
 					perror("send");
 		/**/}
 			
