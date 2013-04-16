@@ -14,6 +14,7 @@
 #include <arpa/inet.h>
 #include <sys/wait.h>
 #include <signal.h>
+#include <sys/mman.h>
 
 #define PORT "3490"  // the port users will be connecting to
 
@@ -124,7 +125,7 @@ int main(void)
 		fgetc(dados);
 		
 		fgets(biblioteca[i].titulo, 101, dados);
-		printf("%s \n", biblioteca[i].titulo);
+		//printf("%s \n", biblioteca[i].titulo);
 		fgets(biblioteca[i].descricao, MAXDATASIZE, dados);
 		
 		fgets(aux, MAXDATASIZE, dados);
@@ -141,9 +142,14 @@ int main(void)
 	}
 	int total_livros = i;
 	
+	//memory map
+	//char *addr;
+	//addr = mmap(NULL, sizeof(biblioteca), PROT_WRITE | PROT_READ, MAP_SHARED,
+     //      int fd, off_t offset);
+	
 	int bytes_rcv;
 	char buf[MAXDATASIZE];
-	int opt, cont;
+	int opt, cont, qte;
 	char ISBN[20];
 	FILE *db = fopen("dados.txt", "rw");
 	while(1) {  // main accept() loop
@@ -202,6 +208,7 @@ int main(void)
 		    		for(i = 0; i < total_livros; ++i){
 		    			if(strcmp(biblioteca[i].ISBN, ISBN) == 0){
 		    				strcat(bufs, biblioteca[i].ISBN);
+		    				strcat(bufs, " ");
 		    				strcat(bufs, biblioteca[i].titulo);
 		    				strcat(bufs, biblioteca[i].descricao);
 		    				sprintf(aux, "%d\n\0", biblioteca[i].estoque);
@@ -221,6 +228,7 @@ int main(void)
 		    		strcat(bufs, aux);
 		    		for(i = 0; i < total_livros; ++i){
 	    				strcat(bufs, biblioteca[i].ISBN);
+	    				strcat(bufs, " ");
 	    				strcat(bufs, biblioteca[i].titulo);
 	    				strcat(bufs, biblioteca[i].descricao);
 	    				sprintf(aux, "%d\n\0", biblioteca[i].estoque);
@@ -245,9 +253,18 @@ int main(void)
 		    		}
 		    	}
 		    	
-		    	/*if(opt == 5){
+		    	if(opt == 5){
+		    		bufs[0] = '\0';
+		    		strcat(bufs, "0 ");
+		    		sscanf(buf, "%d %s %d", &opt, ISBN, &qte);
+		    		for(i = 0; i < total_livros; ++i){
+		    			if(strcmp(biblioteca[i].ISBN, ISBN) == 0){
+		    				biblioteca[i].estoque = qte;
+		    				break;
+		    			}		    				
+		    		}
+		    	}
 		    	
-		    	}*/
 		    	printf("%s", bufs);
 				if (send(new_fd, bufs, sizeof(bufs), 0) == -1)
 					perror("send");
