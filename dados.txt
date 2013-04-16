@@ -37,3 +37,36 @@ Written in 1513 for the Medici, immediately following their return to power in F
 Niccolo Machiavelli
 Wordsworth Editions Ltd
 1998
+#
+1234567890
+Graph Theory
+Textbook in Graph Theory
+22
+J.A. Bondy and U.S.R. Murty
+Springer
+2008
+#
+0987654321
+Understanding Cryptography
+A Textbook in Cryptography for Students and Practitioners
+10
+Christof Paar and Jan Pelzl
+Springer
+2010
+#
+999999999
+Problem-Solving Strategies
+This book is an outgrowth of the training of the German IMO team.
+3
+Arthur Engel
+Springer
+1998
+#
+9111111119
+Microeletronics Circuits
+Microeletronics Circuits, fifth edition, is intended as a text for the core courses in eletronics circuits taught to majors in electrical and computer engineering. It should also prove useful to engineers and other professionals wishing to update their knowledge through self-study.
+90
+Adel S. Sedra and Kenneth C. Smith
+Oxford University Press
+2004
+#
