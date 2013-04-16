@@ -80,12 +80,12 @@ int main(int argc, char *argv[])
 	
 	int opt, cont;
 	char ISBN[20];
-	ISBN[0] = '\0';
 	char msg[MAXDATASIZE];
 	char pass[20];
 	int bytes_sent, len, bytes_rcv;
 	
 	while(1){
+		ISBN[0] = '\0';
 		//pseudo user interface
 		printf("Escolha uma opcao:\n");
 		printf("1- listar todos os ISBN e seus respectivos titulos\n");
