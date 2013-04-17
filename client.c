@@ -136,8 +136,13 @@ int main(int argc, char *argv[])
 		        perror("erro no recv");
 		        break;
 		    }
+<<<<<<< HEAD
 		    sscanf(buf, "%d", &cont);    		    
 		    printf("%s", buf);
+=======
+		    sscanf(buf, "%d %s", &cont, msg);
+		    printf("%s", msg+2);
+>>>>>>> b6c7e5ae9f7d832f62af7ef653d5f0b1726daeb4
 		    if(cont == 0) break;
 		    //		    printf("%d\n", cont);
 		    //       		    printf("%s", buf+2);
