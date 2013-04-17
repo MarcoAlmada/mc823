@@ -14,7 +14,7 @@
 #include <arpa/inet.h>
 #include <sys/wait.h>
 #include <signal.h>
-#include <sys/mman.h>
+#include <sys/time.h>
 
 #define PORT "3490"  // the port users will be connecting to
 
@@ -141,6 +141,7 @@ int main(void)
 		
 	}
 	int total_livros = i;
+	printf("--> %d\n", total_livros);
 	
 	//memory map
 	//char *addr;
@@ -172,11 +173,16 @@ int main(void)
 			char bufs[MAXDATASIZE];
 			
 			
-		/**/while(1){
+		/**/while(1){		
 				if ((bytes_rcv = recv(new_fd, buf, MAXDATASIZE-1, 0)) == -1) {
 		       		perror("erro no recv");
 		        	break;
 		    	}
+		    	
+		    	//pega tempo
+				struct timeval tempo_in, tempo_fim;
+				gettimeofday(&tempo_in, NULL);
+		    	
 		    	sscanf(buf, "%d", &opt);
 		    	
 		    	if(opt == 1){
@@ -189,7 +195,7 @@ int main(void)
 		    		}
 		    	}
 		    	
-		    	if(opt == 2){
+		    	else if(opt == 2){
 		    		bufs[0] = '\0';
 		    		strcat(bufs, "0 ");
 		    		sscanf(buf, "%d %s", &opt, ISBN);
@@ -201,59 +207,67 @@ int main(void)
 		    		}
 		    	}
 		    	
-		    	if(opt == 3){
+		    	else if(opt == 3){
 		    		bufs[0] = '\0';
 		    		strcat(bufs, "0 ");
 		    		sscanf(buf, "%d %s", &opt, ISBN);
 		    		for(i = 0; i < total_livros; ++i){
 		    			if(strcmp(biblioteca[i].ISBN, ISBN) == 0){
 		    				strcat(bufs, biblioteca[i].ISBN);
-		    				strcat(bufs, " ");
+		    				strcat(bufs, "\n");
 		    				strcat(bufs, biblioteca[i].titulo);
 		    				strcat(bufs, biblioteca[i].descricao);
-		    				sprintf(aux, "%d\n\0", biblioteca[i].estoque);
+		    				sprintf(aux, "%d\n", biblioteca[i].estoque);
 		    				strcat(bufs, aux);
 		    				strcat(bufs, biblioteca[i].autor);
 		    				strcat(bufs, biblioteca[i].editora);
-		    				sprintf(aux, "%d\n\0", biblioteca[i].ano);
+		    				sprintf(aux, "%d\n", biblioteca[i].ano);
 		    				strcat(bufs, aux);
 		    				break;
 		    			}		    				
 		    		}
 		    	}
-		    	
-		    	if(opt == 4){
-		    		bufs[0] = '\0';
-		    		sprintf(aux, "%d \0", total_livros);
-		    		strcat(bufs, aux);
-		    		for(i = 0; i < total_livros; ++i){
+		    
+		    	else if(opt == 4){
+		    		for(i = total_livros-2; i >= 0; i--){
+		    			bufs[0] = '\0';
+			    		if(i == 0) strcat(bufs, "0 ");
+			    		else strcat(bufs, "1 ");
+			    		
+			    		printf("%d %s\n", i, biblioteca[i].titulo);
+			    		
 	    				strcat(bufs, biblioteca[i].ISBN);
-	    				strcat(bufs, " ");
+	    				strcat(bufs, "\n");
 	    				strcat(bufs, biblioteca[i].titulo);
 	    				strcat(bufs, biblioteca[i].descricao);
-	    				sprintf(aux, "%d\n\0", biblioteca[i].estoque);
+	    				sprintf(aux, "%d\n", biblioteca[i].estoque);
 	    				strcat(bufs, aux);
 	    				strcat(bufs, biblioteca[i].autor);
 	    				strcat(bufs, biblioteca[i].editora);
-	    				sprintf(aux, "%d\n\0", biblioteca[i].ano);
-	    				strcat(bufs, aux);		    				
-		    		}
+	    				sprintf(aux, "%d\n", biblioteca[i].ano);
+	    				strcat(bufs, aux);
+	    				strcat(bufs, "\n");   				
+						
+						printf("%s\n", bufs);
+			    		if (send(new_fd, bufs, strlen(bufs)+1, 0) == -1)
+						perror("send");
+					}
 		    	}
 		    	
-		    	if(opt == 6){
+		    	else if(opt == 6){
 		    		bufs[0] = '\0';
 		    		strcat(bufs, "0 ");
 		    		sscanf(buf, "%d %s", &opt, ISBN);
 		    		for(i = 0; i < total_livros; ++i){
 		    			if(strcmp(biblioteca[i].ISBN, ISBN) == 0){
-		    				sprintf(aux, "%d\n\0", biblioteca[i].estoque);
+		    				sprintf(aux, "%d\n", biblioteca[i].estoque);
 	    					strcat(bufs, aux);
 		    				break;
 		    			}		    				
 		    		}
 		    	}
 		    	
-		    	if(opt == 5){
+		    	else if(opt == 5){
 		    		bufs[0] = '\0';
 		    		strcat(bufs, "0 ");
 		    		sscanf(buf, "%d %s %d", &opt, ISBN, &qte);
@@ -265,9 +279,17 @@ int main(void)
 		    		}
 		    	}
 		    	
-		    	printf("%s", bufs);
-				if (send(new_fd, bufs, sizeof(bufs), 0) == -1)
-					perror("send");
+		    	//pega tempo final
+				gettimeofday(&tempo_fim, NULL);
+				double tempo1, tempo2;
+				tempo1 = tempo_in.tv_sec + 0.000001*tempo_in.tv_usec;
+				tempo2 = tempo_fim.tv_sec + 0.000001*tempo_fim.tv_usec;
+				printf("\nTempo total: %lf\n", tempo2-tempo1);
+				
+				if(opt != 4){
+					if (send(new_fd, bufs, strlen(bufs)+1, 0) == -1)
+						perror("send");
+				}
 		/**/}
 			
 			close(new_fd);
