@@ -136,6 +136,10 @@ O tamanho adotado para os \emph{buffers} foi deliberadamente elevado, para que a
 
 \section{Resultados}
 
+Os resultados estão presentes na tabelas anexas a este documento. As medições realizadas para a operação 4, por um pequeno \emph{bug}, foram feitas com cada cliente se conectando ao servidor uma vez, efetuando a solicitação e encerrando a conexão após efetuar a resposta. Todos os outros testes foram efetuados a partir da realização de 50 requisições sequenciais.
+
+O tempo de consulta é o tempo decorrido entre imediatamente após o servidor receber a requisição e imediatamente antes de ele enviar a mensagem com a resposta. O tempo total é medido desde antes do \texttt{write} até depois do \texttt{read}, e o tempo de comunicação é metade da diferença entre esses tempos.
+
 \section{Conclusão}
 
 Os \emph{sockets} TCP funcionam bem para a comunicação entre processos. Embora os testes tenham sido realizados apenas em máquinas em uma mesma rede local, é possível supor que se manterá a funcionalidade quando as conexões forem realizadas entre máquinas em redes diferentes, graças às garantias oferecidas pelo protocolo TCP. Assim, a versão do sistema empregando o protocolo UDP provavelmente exigirá a implementação de salvaguardas adicionais para garantir o mesmo nível de confiabilidade atualmente obtido somente com o uso de instruções básicas para a criação dos \emph{sockets} TCP.
