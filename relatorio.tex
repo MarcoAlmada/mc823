@@ -78,7 +78,7 @@
 
 \section{Introdução}
 
-O presente relatório tem como objetivo descrever as atividades desempenhadas pela dupla durante a implementação do primeiro projeto de MC823 no primeirro semestre de 2013. Tal projeto consistia na implementação de um sistema para consulta e controle de estoque em uma biblioteca, utilizando uma arquitetura cliente-servidor. No primeiro projeto, a comunicação entre servidor e clientes será realizada através do protocolo TCP, com uma implementação de servidor concorrente.
+O presente relatório tem como objetivo descrever a implementação e os resultados do primeiro projeto de MC823 no primeirro semestre de 2013. Tal projeto consistia na implementação de um sistema para consulta e controle de estoque em uma biblioteca, utilizando uma arquitetura cliente-servidor. No primeiro projeto, a comunicação entre servidor e clientes será realizada através do protocolo TCP, com uma implementação de servidor concorrente.
 
 O servidor armazena as seguintes informações sobre livros:
 \begin{itemize}
@@ -111,6 +111,12 @@ O ISBN é o tipo de parâmetro mais comum das operações que o pedem, mas a alt
 Com base na opção selecionada e em eventuais parâmetros, o cliente constrói uma mensagem no \emph{buffer} específico. 
 A solicitação é então enviada para o servidor por TCP, e a mensagem de volta é processada e impressa em tela.
 
+A fim de implementar a comunicação entre cliente e servidor, criamos um protocolo simples especificando como cada requisição e resposta deveria ser
+construída. As requisições mandam inicialmente o número da operação desejada, juntamente com ISBN e estoque, caso necessário. O servidor devolve
+como resposta
+uma string contendo um inteiro e a resposta da requisição. Especificamos que o inteiro seria 1 caso o servidor ainda tivesse mais mensagens
+a mandar como resposta da requisição, e 0 caso contrário. Entretando, visto que o número de livros do banco de dados era pequeno, observamos que
+seria suficiente utilizar um buffer de aproximadamente 200kB no lugar do referido mecanismo.
 
 
 \section{Vantagens e Desvantagens da Solução}
@@ -119,13 +125,14 @@ O pré-processamento pareceu uma opção viável, uma vez que não seria necess�
 Ao final de sua execução, o servidor salva seus dados em disco, efetivamente atualizando a versão permanente do banco de dados.
 Como a chance de panes no servidor é relativamente baixa, os riscos associados a essa escolha são poucos, mas um sistema mais robusto salvaria os dados de uma maneira mais eficiente. 
 O uso de um sistema gerenciador de banco de dados facilitaria o tratamento desse risco, e também de outro problema decorrente de nossa escolha: caso dois processos tentem editar o estoque em tempos parecidos, não há exclusão mútua implementada, de forma que se verifica uma corrida.
-Porém, uma vez que os testes estão sendo efetuados com apenas um cliente, esta passa a ser uma preocupação menor; um sistema real com múltiplos usuários teria maior probabilidade de encontrar um erro do tipo.
+Porém, uma vez utilizamos a suposição de que há apenas um cliente livraria, esta passa a ser uma preocupação menor; um sistema real com múltiplos usuários
+com privilégio de escrita necessitaria incluir um mecanismo de tratamento de concorrência.
 
 A comunicação com o protocolo TCP garante que não haverá perda de mensagens e que elas chegarão em ordem. 
 Todavia, ela adiciona um \emph{overhead} na transmissão de mensagens, que poderá ser melhor verificado a partir da comparação com o desempenho da implementação realizada em UDP. 
 De antemão, as garantias oferecidas pelo TCP na entrega de pacotes já nos pouparam de tratar problemas de perda e ordenação de pacotes, tornando o código mais enxuto.
 
-O tamanho adotado para os \emph{buffers} foi deliberadamente elevado, para que a preocupação com partir a mensagem em blocos adequados para transmissão não estivesse no nível da aplicação, mas sim fosse jogado para camadas mais baixas. Isso tornou prática a composição dos \emph{buffers}, que certamente terão tamanho o bastante para lidar com a pequena escala do banco de dados em questão.
+O tamanho adotado para os \emph{buffers} foi deliberadamente elevado, para que a preocupação em partir a mensagem em blocos adequados para transmissão não estivesse no nível da aplicação, mas sim fosse jogado para camadas mais baixas. Isso tornou prática a composição dos \emph{buffers}, que certamente terão tamanho o bastante para lidar com a pequena escala do banco de dados em questão.
 
 \section{Resultados}
 
