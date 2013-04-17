@@ -172,12 +172,13 @@ int main(void)
 			//LOOP QUE PROCESSA REQUISICOES
 			char bufs[MAXDATASIZE];
 			
-			
 		/**/while(1){		
 				if ((bytes_rcv = recv(new_fd, buf, MAXDATASIZE-1, 0)) == -1) {
 		       		perror("erro no recv");
 		        	break;
 		    	}
+		    	
+		    	int mudou = 0; //mudou estoque
 		    	
 		    	//pega tempo
 				struct timeval tempo_in, tempo_fim;
@@ -289,6 +290,7 @@ int main(void)
 		    		bufs[0] = '\0';
 		    		strcat(bufs, "0 ");
 		    		sscanf(buf, "%d %s %d", &opt, ISBN, &qte);
+		    		mudou = 1;
 		    		for(i = 0; i < total_livros; ++i){
 		    			if(strcmp(biblioteca[i].ISBN, ISBN) == 0){
 		    				biblioteca[i].estoque = qte;
@@ -304,12 +306,30 @@ int main(void)
 				tempo2 = tempo_fim.tv_sec + 0.000001*tempo_fim.tv_usec;
 				printf("\nTempo total: %lf\n", tempo2-tempo1);
 				
-				//if(opt != 4){
-					if (send(new_fd, bufs, strlen(bufs)+1, 0) == -1)
-						perror("send");
-				//}
+				
+				if (send(new_fd, bufs, strlen(bufs)+1, 0) == -1)
+					perror("send");
+					
+				if(mudou){
+					bufs[0] = '\0';
+		    		for(i = 0; i < total_livros-1; ++i){
+		   				strcat(bufs, biblioteca[i].ISBN);
+		   				strcat(bufs, "\n");
+		   				strcat(bufs, biblioteca[i].titulo);
+		   				strcat(bufs, biblioteca[i].descricao);
+		   				sprintf(aux, "%d\n", biblioteca[i].estoque);
+		   				strcat(bufs, aux);
+		   				strcat(bufs, biblioteca[i].autor);
+		   				strcat(bufs, biblioteca[i].editora);
+		   				sprintf(aux, "%d\n", biblioteca[i].ano);
+		   				strcat(bufs, aux);			
+			    	}
+			    	FILE *fout = fopen("dados.txt", "w");
+			    	fprintf(fout, "%s", bufs);
+			    	fclose(fout);
+				}
 		/**/}
-			
+						
 			close(new_fd);
 			exit(0);
 		}
