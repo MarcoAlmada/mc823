@@ -47,7 +47,7 @@ A Textbook in Cryptography for Students and Practitioners
 Christof Paar and Jan Pelzl
 Springer
 2010
-999999999
+9999999999
 Problem-Solving Strategies
 This book is an outgrowth of the training of the German IMO team.
 3
