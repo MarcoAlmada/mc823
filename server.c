@@ -117,25 +117,25 @@ int main(void)
 
 	//preprocessamento
 	struct livro biblioteca[MAXBIBSIZE];
-	char aux[100123];
+	char aux[MAXDATASIZE];
 	FILE *dados = fopen("dados.txt", "r");
 	int i = 0, j;
 	while(!feof(dados) ){
 		fgets(biblioteca[i].ISBN, 11, dados);
 		fgetc(dados);
 		
-		fgets(biblioteca[i].titulo, 101, dados);
+		fgets(biblioteca[i].titulo, 1000, dados);
 		//printf("%s \n", biblioteca[i].titulo);
-		fgets(biblioteca[i].descricao, MAXDATASIZE, dados);
+		fgets(biblioteca[i].descricao, MAXDATASIZE-1, dados);
 		
 		fgets(aux, MAXDATASIZE, dados);
 		biblioteca[i].estoque = atoi(aux);
 		
-		fgets(biblioteca[i].autor, MAXDATASIZE, dados);
+		fgets(biblioteca[i].autor, MAXDATASIZE-1, dados);
 		
-		fgets(biblioteca[i].editora, MAXDATASIZE, dados);
+		fgets(biblioteca[i].editora, MAXDATASIZE-1, dados);
 		
-		fgets(aux, MAXDATASIZE, dados);
+		fgets(aux, MAXDATASIZE-1, dados);
 		biblioteca[i].ano = atoi(aux);
 		i++;
 		
@@ -229,7 +229,7 @@ int main(void)
 		    	}
 		    
 		    	else if(opt == 4){
-		    		for(i = total_livros-2; i >= 0; i--){
+		    		/*for(i = total_livros-2; i >= 0; i--){
 		    			bufs[0] = '\0';
 			    		if(i == 0) strcat(bufs, "0 ");
 			    		else strcat(bufs, "1 ");
@@ -251,7 +251,25 @@ int main(void)
 						printf("%s\n", bufs);
 			    		if (send(new_fd, bufs, strlen(bufs)+1, 0) == -1)
 						perror("send");
-					}
+					}*/
+					bufs[0] = '\0';
+		    		strcat(bufs, "0 ");
+		    		//sscanf(buf, "%d %s", &opt, ISBN);
+		    		for(i = 0; i < total_livros; ++i){
+		    			//if(strcmp(biblioteca[i].ISBN, ISBN) == 0){
+		    				strcat(bufs, biblioteca[i].ISBN);
+		    				strcat(bufs, "\n");
+		    				strcat(bufs, biblioteca[i].titulo);
+		    				strcat(bufs, biblioteca[i].descricao);
+		    				sprintf(aux, "%d\n", biblioteca[i].estoque);
+		    				strcat(bufs, aux);
+		    				strcat(bufs, biblioteca[i].autor);
+		    				strcat(bufs, biblioteca[i].editora);
+		    				sprintf(aux, "%d\n", biblioteca[i].ano);
+		    				strcat(bufs, aux);
+		    				//break;
+		    			//}		    				
+		    		}
 		    	}
 		    	
 		    	else if(opt == 6){
@@ -286,10 +304,10 @@ int main(void)
 				tempo2 = tempo_fim.tv_sec + 0.000001*tempo_fim.tv_usec;
 				printf("\nTempo total: %lf\n", tempo2-tempo1);
 				
-				if(opt != 4){
+				//if(opt != 4){
 					if (send(new_fd, bufs, strlen(bufs)+1, 0) == -1)
 						perror("send");
-				}
+				//}
 		/**/}
 			
 			close(new_fd);
