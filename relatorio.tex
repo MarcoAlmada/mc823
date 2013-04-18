@@ -142,9 +142,15 @@ O tempo de consulta é o tempo decorrido entre imediatamente após o servidor re
 
 \section{Conclusão}
 
-Os \emph{sockets} TCP funcionam bem para a comunicação entre processos. Embora os testes tenham sido realizados apenas em máquinas em uma mesma rede local, é possível supor que se manterá a funcionalidade quando as conexões forem realizadas entre máquinas em redes diferentes, graças às garantias oferecidas pelo protocolo TCP. Assim, a versão do sistema empregando o protocolo UDP provavelmente exigirá a implementação de salvaguardas adicionais para garantir o mesmo nível de confiabilidade atualmente obtido somente com o uso de instruções básicas para a criação dos \emph{sockets} TCP.
+Os \emph{sockets} TCP funcionam bem para a comunicação entre processos. Embora os testes tenham sido realizados apenas em máquinas em uma mesma rede local, é possível supor que se manterá a funcionalidade quando as conexões forem realizadas entre máquinas em redes diferentes, graças às garantias oferecidas pelo protocolo TCP. 
+Assim, a versão do sistema empregando o protocolo UDP provavelmente exigirá a implementação de salvaguardas adicionais para garantir o mesmo nível de confiabilidade atualmente obtido somente com o uso de instruções básicas para a criação dos \emph{sockets} TCP.
 
-A implementação realizada pode ter alguns problemas com consistência dos dados e robustez. O uso de um sistema gerenciador de banco de dados, assim como o emprego de diretivas de semáforo ou \emph{mutexes}, eliminaria a chance de dois processos-filhos do servidor possuírem valores diferentes para o estoque, assim como facilitaria a criação de uma operação de adição de livros ao sistema. O problema também poderia ser resolvido utilizando \emph{memory maps}, mas a pequena escala planejada para o projeto, assim como o intuito pedagógico, contribuiram para que tal solução fosse vista como algo de baixa prioridade. Também não foram adotadas medidas de segurança para o acesso com senha à base de dados.
+A implementação realizada pode ter alguns problemas com consistência dos dados e robustez. 
+O uso de um sistema gerenciador de banco de dados, assim como o emprego de diretivas de semáforo ou \emph{mutexes}, eliminaria a chance de dois processos-filhos do servidor possuírem valores diferentes para o estoque, assim como facilitaria a criação de uma operação de adição de livros ao sistema. 
+O problema também poderia ser resolvido utilizando \emph{memory maps}, mas a pequena escala planejada para o projeto, assim como o intuito pedagógico, contribuiram para que tal solução fosse vista como algo de baixa prioridade. 
+Também não foram adotadas medidas de segurança para o acesso com senha à base de dados.
+
+Em geral, os tempos de consulta respondem por uma fração muito pequena do tempo total. Ou seja, mesmo em computadores dentro de uma mesma rede, há predominância do tempo de conexão, como as tabelas anexas evidenciam. Os tempos medidos para as operações 1 e 4 apesentam menor desvio padrão, que chega a ser pequeno em relação aos tempos médios, mas as demais operações apresentam desvios consideráveis em seus tempos durante a execução.
 
 \section{Referências}
 
@@ -429,8 +435,7 @@ int main(void) {
 	tempo1 = tempo_in.tv_sec + 0.000001*tempo_in.tv_usec;
 	tempo2 = tempo_fim.tv_sec + 0.000001*tempo_fim.tv_usec;
 	printf("\nTempo total: %lf\n", tempo2-tempo1);
-				
-				
+							
 	if (send(new_fd, bufs, strlen(bufs)+1, 0) == -1)
 	  perror("send");
 				
@@ -452,14 +457,12 @@ int main(void) {
 	  fprintf(fout, "%s", bufs);
 	  fclose(fout);
 	}
-	/**/}
-						
+	/**/}	
       close(new_fd);
       exit(0);
     }
     close(new_fd);  // parent doesn't need this
   }
-
   return 0;
 }
 \end{verbatim}
@@ -600,11 +603,11 @@ int main(int argc, char *argv[])
     //le resultado
     while(1){
       if ((bytes_rcv = recv(sockfd, buf, MAXDATASIZE-1, 0)) == -1) {
-	perror("erro no recv");
-	break;
+        perror("erro no recv");
+        break;
       }
       sscanf(buf, "%d", &cont);    		    
-      printf("%s", buf);
+      printf("%s", buf+2);
       if(cont == 0) break;
     }
 		
@@ -615,12 +618,8 @@ int main(int argc, char *argv[])
     tempo2 = tempo_fim.tv_sec + 0.000001*tempo_fim.tv_usec;
     printf("\nTempo total: %lf\n", tempo2-tempo1);
   }
-
   close(sockfd);
-
   return 0;
 }
-
 \end{verbatim}
-
 \end{document}
