@@ -150,7 +150,8 @@ O uso de um sistema gerenciador de banco de dados, assim como o emprego de diret
 O problema também poderia ser resolvido utilizando \emph{memory maps}, mas a pequena escala planejada para o projeto, assim como o intuito pedagógico, contribuiram para que tal solução fosse vista como algo de baixa prioridade. 
 Também não foram adotadas medidas de segurança para o acesso com senha à base de dados.
 
-Em geral, os tempos de consulta respondem por uma fração muito pequena do tempo total. Ou seja, mesmo em computadores dentro de uma mesma rede, há predominância do tempo de conexão, como as tabelas anexas evidenciam. Os tempos medidos para as operações 1 e 4 apesentam menor desvio padrão, que chega a ser pequeno em relação aos tempos médios, mas as demais operações apresentam desvios consideráveis em seus tempos durante a execução.
+Em geral, os tempos de consulta respondem por uma fração muito pequena do tempo total, sendo mais significativo para a operação 4; os tempos de consulta nas operações 3, 4 e 6 apresentam maior desvio padrão em termos proporcionais. 
+Mesmo nesses casos e em computadores dentro de uma mesma rede, há predominância do tempo de conexão, como as tabelas anexas evidenciam.
 
 \section{Referências}
 
