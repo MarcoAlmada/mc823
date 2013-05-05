@@ -117,7 +117,7 @@ int main(void)
 	printf("--> %d\n", total_livros);
 
     addr_len = sizeof their_addr;
-    if ((numbytes = recvfrom(sockfd, buf, MAXBUFLEN-1 , 0,
+    if ((numbytes = recvfrom(sockfd, buf, MAXDATASIZE-1 , 0,
         (struct sockaddr *)&their_addr, &addr_len)) == -1) {
         perror("erro no recvfrom");
         exit(1);
@@ -130,6 +130,13 @@ int main(void)
     printf("listener: packet is %d bytes long\n", numbytes);
     buf[numbytes] = '\0';
     printf("listener: packet contains \"%s\"\n", buf);
+    
+    char msg[4] = "ok\n";
+    if ((numbytes = sendto(sockfd, msg, 4, 0,
+		         (struct sockaddr *)&their_addr, addr_len)) == -1) {
+		    perror("talker: sendto");
+		    exit(1);
+		}
 
     close(sockfd);
 
