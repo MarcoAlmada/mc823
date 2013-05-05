@@ -22,6 +22,8 @@ int main(int argc, char *argv[])
     int sockfd;
     char buf[MAXDATASIZE];
     struct addrinfo hints, *servinfo, *p;
+    struct sockaddr_storage their_addr;
+    socklen_t addr_len;
     int rv;
     int numbytes;
     int estoque;
@@ -115,10 +117,17 @@ int main(int argc, char *argv[])
 	
 		//le resultado
 		while(1){
-		    if ((bytes_rcv = recv(sockfd, buf, MAXDATASIZE-1, 0)) == -1) {
+			addr_len = sizeof their_addr;
+			if ((numbytes = recvfrom(sockfd, buf, MAXDATASIZE-1 , 0,
+		        (struct sockaddr *)&their_addr, &addr_len)) == -1) {
+        		perror("erro no recvfrom");
+        		exit(1);
+    		}
+    		
+		   /* if ((bytes_rcv = recv(sockfd, buf, MAXDATASIZE-1, 0)) == -1) {
 		        perror("erro no recv");
 		        break;
-		    }
+		    }*/
 		    sscanf(buf, "%d", &cont);    		    
 		    printf("%s", buf);
 		    if(cont == 0) break;
@@ -137,7 +146,7 @@ int main(int argc, char *argv[])
 
     freeaddrinfo(servinfo);
 
-    printf("talker: sent %d bytes to %s\n", numbytes, argv[1]);
+    //printf("talker: sent %d bytes to %s\n", numbytes, argv[1]);
     close(sockfd);
 
     return 0;
