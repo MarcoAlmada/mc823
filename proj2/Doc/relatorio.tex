@@ -78,7 +78,7 @@
 
 \section{Introdução}
 
-O presente relatório tem como objetivo descrever a implementação e os resultados do primeiro projeto de MC823 no primeirro semestre de 2013. Tal projeto consistia na implementação de um sistema para consulta e controle de estoque em uma biblioteca, utilizando uma arquitetura cliente-servidor. No primeiro projeto, a comunicação entre servidor e clientes será realizada através do protocolo TCP, com uma implementação de servidor concorrente.
+O presente relatório tem como objetivo descrever a implementação e os resultados do segundo projeto de MC823 no primeiro semestre de 2013, comparando-os com o resultados obtidos no primeiro projeto. Tal como o Projeto 1, este projeto consistia na implementação de um sistema para consulta e controle de estoque em uma biblioteca, utilizando uma arquitetura cliente-servidor. Entretanto, a implementação o sistema desta vez utilizou o protocolo de camada de transporte UDP, ao invés de TCP.
 
 O servidor armazena as seguintes informações sobre livros:
 \begin{itemize}
@@ -93,17 +93,16 @@ O servidor armazena as seguintes informações sobre livros:
 
 O cliente pode efetuar três tipos de operações: listar todos os livros (o cliente pode escolher entre receber todos os dados de cada livro ou somente ISBN e título), obter dados de um livro cujo ISBN é conhecido (pode pedir a descrição, o número de livros em estoque ou todos os dados do livro) ou alterar o número de unidades em estoque de um livro cujo ISBN seja conhecido.
 
-O mesmo sistema será posteriormente reimplementado utilizando o protocolo UDP, com a finalidade de identificar as semelhanças e as diferenças no funcionamento das duas implementações. Assim, os dados obtidos durante o primeiro projeto servirão de referência para o projeto seguinte.
-
 \section{Implementação}
 
-Tanto o servidor quanto o cliente foram implementados em linguagem C, e os códigos serão apresentados como anexos deste relatório.
-O banco de dados foi implementado como um arquivo \texttt{.txt}, que passa por uma etapa de pré-processamento no servidor: o arquivo com os dados dos livros é lido pelo servidor, que armazena os dados de cada livro em um vetor de \texttt{struct livro}s, para que não seja necessária uma nova consulta ao banco de dados a cada operação. 
+A implementação do sistema de livraria neste projeto foi bastate semelhante à implementação do Projeto 1.
+Cliente e servidor foram implementados em linguagem C, e seus códigos estão presentes nos anexos 1 e 2. O banco de dados da livraria, novamente, foi implementado como um arquivo \texttt{.txt}. O pré-processamento utilizado foi o mesmo: o arquivo com os dados dos livros é lido pelo servidor, que armazena os dados de cada livro em um vetor de \texttt{struct livro}s. Dessa forma, não é necessária uma nova consulta ao banco de dados a cada operação requisitada pelo cliente.
+
+Após o pré-processamento, o servidor fica na escuta em um \emph{socket} UDP, aguardando mensagens enviadas por clientes. As mensagens são tratadas iterativamente: aqui, ao contrário
+
  
-Após o pré-processamento, o servidor fica na escuta em um \emph{socket} TCP, aguardando algum cliente se conectar. 
-Ao receber uma mensagem de um cliente, o servidor faz um \texttt{fork} para processá-la, recebendo o código da operação selecionada pelo cliente e os eventuais parâmetros.
 O vetor de livros é então varrido em busca dos dados desejados, que são adicionados a um \emph{buffer} de mensagens.
-Ao final do processamento da operação, o \emph{buffer} é enfiado ao cliente responsável pela requisição, por TCP.
+Ao final do processamento da operação, o \emph{buffer} é enviado ao cliente responsável pela requisição, por TCP.
 
 O cliente, ao ser inicializado, fornece ao usuário um menu com as funcionalidades disponíveis ao programa, elencadas na Introdução e na especificação do projeto. 
 O usuário seleciona uma opção e, se for o caso, fornece os parâmetros necessários.
