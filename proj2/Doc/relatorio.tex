@@ -95,32 +95,42 @@ O cliente pode efetuar três tipos de operações: listar todos os livros (o cli
 
 \section{Implementação}
 
+
 A implementação do sistema de livraria neste projeto foi bastate semelhante à implementação do Projeto 1.
-Cliente e servidor foram implementados em linguagem C, e seus códigos estão presentes nos anexos 1 e 2. O banco de dados da livraria, novamente, foi implementado como um arquivo \texttt{.txt}. O pré-processamento utilizado foi o mesmo: o arquivo com os dados dos livros é lido pelo servidor, que armazena os dados de cada livro em um vetor de \texttt{struct livro}s. Dessa forma, não é necessária uma nova consulta ao banco de dados a cada operação requisitada pelo cliente.
+Cliente e servidor foram implementados em linguagem C, e seus códigos se encontram nos anexos 1 e 2. O banco de dados da livraria, novamente, foi implementado como um arquivo \texttt{.txt}.
+O pré-processamento utilizado foi o mesmo: o arquivo com os dados dos livros é lido pelo servidor, que armazena os dados de cada livro em um vetor de \texttt{struct livro}s.
+Dessa forma, não é necessária uma nova consulta ao banco de dados a cada operação requisitada pelo cliente.
 
 Após o pré-processamento, o servidor fica na escuta em um \emph{socket} UDP, aguardando mensagens enviadas por clientes. As mensagens são tratadas iterativamente: aqui, ao contrário
+da implementação com TCP, o servidor não faz chamadas a \texttt{fork} para que processos filhos cuidem das requisições. Todas são tratadas por um mesmo
+processo, na ordem em que são recebidas.
 
- 
-O vetor de livros é então varrido em busca dos dados desejados, que são adicionados a um \emph{buffer} de mensagens.
-Ao final do processamento da operação, o \emph{buffer} é enviado ao cliente responsável pela requisição, por TCP.
+A fim de responder as requisições, o servidor varre o vetor de livros em busca dos dados
+desejados. Estes são guardados em um \emph{buffer} de mensagens que, ao
+final do processamento da operação, é enviado ao cliente pela requisição via UDP.
 
-O cliente, ao ser inicializado, fornece ao usuário um menu com as funcionalidades disponíveis ao programa, elencadas na Introdução e na especificação do projeto. 
-O usuário seleciona uma opção e, se for o caso, fornece os parâmetros necessários.
-O ISBN é o tipo de parâmetro mais comum das operações que o pedem, mas a alteração de estoque também pede uma senha de acesso e o novo valor do estoque. 
-Com base na opção selecionada e em eventuais parâmetros, o cliente constrói uma mensagem no \emph{buffer} específico. 
-A solicitação é então enviada para o servidor por TCP, e a mensagem de volta é processada e impressa em tela.
+O cliente, ao ser inicializado, fornece ao usuário um menu com as funcionalidades disponíveis
+ao programa, elencadas na Introdução e na especificação do projeto. 
+O usuário seleciona uma opção e fornece os parâmetros requeridos pela operação.
+Com base na opção selecionada e em eventuais parâmetros, o cliente constrói uma mensagem em
+\emph{buffer} específico para este fim. 
+A solicitação é então enviada para o servidor via UDP, e a mensagem de retornada é processada
+e impressa na tela.
 
-A fim de implementar a comunicação entre cliente e servidor, criamos um protocolo simples especificando como cada requisição e resposta deveria ser
-construída. As requisições mandam inicialmente o número da operação desejada, juntamente com ISBN e estoque, caso necessário. O servidor devolve
-como resposta
-uma string contendo um inteiro e a resposta da requisição. Especificamos que o inteiro seria 1 caso o servidor ainda tivesse mais mensagens
-a mandar como resposta da requisição, e 0 caso contrário. Entretando, visto que o número de livros do banco de dados era pequeno, observamos que
-seria suficiente utilizar um buffer de aproximadamente 200kB no lugar do referido mecanismo.
-
+A fim de implementar a comunicação entre cliente e servidor, criamos um protocolo simples
+especificando como cada requisição e resposta deveria ser
+construída. As requisições mandam em uma única mensagem o número da operação desejada
+juntamente com ISBN e estoque, caso necessário. O servidor devolve
+como resposta uma única mensagem contendo a resposta da requisição. Tal protocolo
+facilita a contagem dos tempos de comunicação e consulta: caso cada requisição precisasse
+mandar e processar mais mensagens, servidor e cliente necessitariam armazenar e processar os
+tempos de comunicação e consulta de várias mensagem a fim de calcular o tempo tomado por
+uma única requisição.
 
 \section{Vantagens e Desvantagens da Solução}
 
-O pré-processamento pareceu uma opção viável, uma vez que não seria necessário lidar com um número grande de livros. Assim, o consumo de memória é relativamente pequeno e há um ganho em desempenho. 
+O pré-processamento pareceu uma opção viável, uma vez que não seria necessário lidar com um
+número grande de livros. Assim, o consumo de memória é relativamente pequeno e há um ganho em desempenho. 
 Ao final de sua execução, o servidor salva seus dados em disco, efetivamente atualizando a versão permanente do banco de dados.
 Como a chance de panes no servidor é relativamente baixa, os riscos associados a essa escolha são poucos, mas um sistema mais robusto salvaria os dados de uma maneira mais eficiente. 
 O uso de um sistema gerenciador de banco de dados facilitaria o tratamento desse risco, e também de outro problema decorrente de nossa escolha: caso dois processos tentem editar o estoque em tempos parecidos, não há exclusão mútua implementada, de forma que se verifica uma corrida.
@@ -135,7 +145,9 @@ O tamanho adotado para os \emph{buffers} foi deliberadamente elevado, para que a
 
 \section{Resultados}
 
-Os resultados estão presentes na tabelas anexas a este documento. As medições realizadas para a operação 4, por um pequeno \emph{bug}, foram feitas com cada cliente se conectando ao servidor uma vez, efetuando a solicitação e encerrando a conexão após efetuar a resposta. Todos os outros testes foram efetuados a partir da realização de 50 requisições sequenciais.
+Os resultados estão presentes na tabelas anexas a este documento. Para todas as 6 operações,
+as medições foram obtidas a partir da realização de 50 requisições sequenciais originadas
+por um único cliente.
 
 O tempo de consulta é o tempo decorrido entre imediatamente após o servidor receber a requisição e imediatamente antes de ele enviar a mensagem com a resposta. O tempo total é medido desde antes do \texttt{write} até depois do \texttt{read}, e o tempo de comunicação é metade da diferença entre esses tempos.
 
@@ -167,21 +179,18 @@ HALL, Brian. \emph{Beej's Guide to Network Programming} -- Using Internet Socket
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <netdb.h>
 #include <arpa/inet.h>
-#include <sys/wait.h>
-#include <signal.h>
-#include <sys/time.h>
+#include <netdb.h>
 
-#define PORT "3490"  // the port users will be connecting to
+#define MYPORT "4950"    // the port users will be connecting to
 
-#define BACKLOG 10	 // how many pending connections queue will hold
+#define MAXBUFLEN 100
 
 #define MAXDATASIZE 200123 // max number of bytes we can get at once
 
 #define MAXBIBSIZE 10
 
-struct livro {
+struct livro{
   char ISBN[14];
   char titulo[1000];
   char descricao[100123];
@@ -191,12 +200,9 @@ struct livro {
   int ano;
 };
 
-void sigchld_handler(int s) {
-  while(waitpid(-1, NULL, WNOHANG) > 0);
-}
-
 // get sockaddr, IPv4 or IPv6:
-void *get_in_addr(struct sockaddr *sa) {
+void *get_in_addr(struct sockaddr *sa)
+{
   if (sa->sa_family == AF_INET) {
     return &(((struct sockaddr_in*)sa)->sin_addr);
   }
@@ -204,22 +210,23 @@ void *get_in_addr(struct sockaddr *sa) {
   return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
-int main(void) {
-  int sockfd, new_fd;  // listen on sock_fd, new connection on new_fd
+int main(void)
+{
+  int sockfd;
   struct addrinfo hints, *servinfo, *p;
-  struct sockaddr_storage their_addr; // connector's address information
-  socklen_t sin_size;
-  struct sigaction sa;
-  int yes=1;
-  char s[INET6_ADDRSTRLEN];
   int rv;
+  int numbytes;
+  struct sockaddr_storage their_addr;
+  char buf[MAXDATASIZE];
+  socklen_t addr_len;
+  char s[INET6_ADDRSTRLEN];
 
   memset(&hints, 0, sizeof hints);
-  hints.ai_family = AF_UNSPEC;
-  hints.ai_socktype = SOCK_STREAM;
+  hints.ai_family = AF_UNSPEC; // set to AF_INET to force IPv4
+  hints.ai_socktype = SOCK_DGRAM;
   hints.ai_flags = AI_PASSIVE; // use my IP
 
-  if ((rv = getaddrinfo(NULL, PORT, &hints, &servinfo)) != 0) {
+  if ((rv = getaddrinfo(NULL, MYPORT, &hints, &servinfo)) != 0) {
     fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
     return 1;
   }
@@ -227,48 +234,29 @@ int main(void) {
   // loop through all the results and bind to the first we can
   for(p = servinfo; p != NULL; p = p->ai_next) {
     if ((sockfd = socket(p->ai_family, p->ai_socktype,
-			 p->ai_protocol)) == -1) {
-      perror("server: socket");
+                         p->ai_protocol)) == -1) {
+      perror("listener: socket");
       continue;
-    }
-
-    if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes,
-		   sizeof(int)) == -1) {
-      perror("setsockopt");
-      exit(1);
     }
 
     if (bind(sockfd, p->ai_addr, p->ai_addrlen) == -1) {
       close(sockfd);
-      perror("server: bind");
+      perror("listener: bind");
       continue;
     }
 
     break;
   }
 
-  if (p == NULL)  {
-    fprintf(stderr, "server: failed to bind\n");
+  if (p == NULL) {
+    fprintf(stderr, "listener: failed to bind socket\n");
     return 2;
   }
 
-  freeaddrinfo(servinfo); // all done with this structure
+  freeaddrinfo(servinfo);
 
-  if (listen(sockfd, BACKLOG) == -1) {
-    perror("listen");
-    exit(1);
-  }
-
-  sa.sa_handler = sigchld_handler; // reap all dead processes
-  sigemptyset(&sa.sa_mask);
-  sa.sa_flags = SA_RESTART;
-  if (sigaction(SIGCHLD, &sa, NULL) == -1) {
-    perror("sigaction");
-    exit(1);
-  }
-
-  printf("server: waiting for connections...\n");
-
+  /* printf("listener: waiting to recvfrom...\n"); */
+    
   //preprocessamento
   struct livro biblioteca[MAXBIBSIZE];
   char aux[MAXDATASIZE];
@@ -279,7 +267,6 @@ int main(void) {
     fgetc(dados);
 		
     fgets(biblioteca[i].titulo, 1000, dados);
-    //printf("%s \n", biblioteca[i].titulo);
     fgets(biblioteca[i].descricao, MAXDATASIZE-1, dados);
 		
     fgets(aux, MAXDATASIZE, dados);
@@ -296,167 +283,141 @@ int main(void) {
   }
   int total_livros = i;
   printf("--> %d\n", total_livros);
-	
-  int bytes_rcv;
-  char buf[MAXDATASIZE];
-  int opt, cont, qte;
-  char ISBN[20];
-  FILE *db = fopen("dados.txt", "rw");
-  while(1) {  // main accept() loop
-    sin_size = sizeof their_addr;
-    new_fd = accept(sockfd, (struct sockaddr *)&their_addr, &sin_size);
-    if (new_fd == -1) {
-      perror("accept");
-      continue;
+
+  addr_len = sizeof their_addr;
+  while (1) {
+    if ((numbytes = recvfrom(sockfd, buf, MAXDATASIZE-1 , 0,
+                             (struct sockaddr *)&their_addr, &addr_len)) == -1) {
+      perror("erro no recvfrom");
+      exit(1);
     }
 
-    inet_ntop(their_addr.ss_family,
-	      get_in_addr((struct sockaddr *)&their_addr),
-	      s, sizeof s);
-    printf("server: got connection from %s\n", s);
-
-    if (!fork()) { // this is the child process
-      close(sockfd); // child doesn't need the listener
-			
-      //LOOP QUE PROCESSA REQUISICOES
-      char bufs[MAXDATASIZE];
-      opt = -1;	
-      /**/while(1){		
-	if ((bytes_rcv = recv(new_fd, buf, MAXDATASIZE-1, 0)) == -1) {
-	  perror("erro no recv");
-	  break;
-	}
-
+    int opt, cont, qte;
+    char ISBN[20];
+    char bufs[MAXDATASIZE]; // exit buffer		    	
+    int mudou = 0; // mudanca no estoque
 		    	
-	int mudou = 0; //mudou estoque
-			
+    //pega tempo
+    struct timeval tempo_in, tempo_fim;
+    gettimeofday(&tempo_in, NULL);
 		    	
-	//pega tempo
-	struct timeval tempo_in, tempo_fim;
-	gettimeofday(&tempo_in, NULL);
+    sscanf(buf, "%d", &opt);
 		    	
-	sscanf(buf, "%d", &opt);
+    if(opt == 1){
+      bufs[0] = '\0';
+      for(i = 0; i < total_livros; ++i){
+        strcat(bufs, biblioteca[i].ISBN);
+        strcat(bufs, " ");
+        strcat(bufs, biblioteca[i].titulo);
+      }
+    }
 		    	
-	if(opt == 1){
-	  bufs[0] = '\0';
-	  strcat(bufs, "0 ");
-	  for(i = 0; i < total_livros; ++i){
-	    strcat(bufs, biblioteca[i].ISBN);
-	    strcat(bufs, " ");
-	    strcat(bufs, biblioteca[i].titulo);
-	  }
-	}
+    else if(opt == 2){
+      bufs[0] = '\0';
+      sscanf(buf, "%d %s", &opt, ISBN);
+      for(i = 0; i < total_livros; ++i){
+        if(strcmp(biblioteca[i].ISBN, ISBN) == 0){
+          strcat(bufs, biblioteca[i].descricao);
+          break;
+        }		    				
+      }
+    }
 		    	
-	else if(opt == 2){
-	  bufs[0] = '\0';
-	  strcat(bufs, "0 ");
-	  sscanf(buf, "%d %s", &opt, ISBN);
-	  for(i = 0; i < total_livros; ++i){
-	    if(strcmp(biblioteca[i].ISBN, ISBN) == 0){
-	      strcat(bufs, biblioteca[i].descricao);
-	      break;
-	    }		    				
-	  }
-	}
-		    	
-	else if(opt == 3){
-	  bufs[0] = '\0';
-	  strcat(bufs, "0 ");
-	  sscanf(buf, "%d %s", &opt, ISBN);
-	  for(i = 0; i < total_livros; ++i){
-	    if(strcmp(biblioteca[i].ISBN, ISBN) == 0){
-	      strcat(bufs, biblioteca[i].ISBN);
-	      strcat(bufs, "\n");
-	      strcat(bufs, biblioteca[i].titulo);
-	      strcat(bufs, biblioteca[i].descricao);
-	      sprintf(aux, "%d\n", biblioteca[i].estoque);
-	      strcat(bufs, aux);
-	      strcat(bufs, biblioteca[i].autor);
-	      strcat(bufs, biblioteca[i].editora);
-	      sprintf(aux, "%d\n", biblioteca[i].ano);
-	      strcat(bufs, aux);
-	      break;
-	    }		    				
-	  }
-	}
+    else if(opt == 3){
+      bufs[0] = '\0';
+      sscanf(buf, "%d %s", &opt, ISBN);
+      for(i = 0; i < total_livros; ++i){
+        if(strcmp(biblioteca[i].ISBN, ISBN) == 0){
+          strcat(bufs, biblioteca[i].ISBN);
+          strcat(bufs, "\n");
+          strcat(bufs, biblioteca[i].titulo);
+          strcat(bufs, biblioteca[i].descricao);
+          sprintf(aux, "%d\n", biblioteca[i].estoque);
+          strcat(bufs, aux);
+          strcat(bufs, biblioteca[i].autor);
+          strcat(bufs, biblioteca[i].editora);
+          sprintf(aux, "%d\n", biblioteca[i].ano);
+          strcat(bufs, aux);
+          break;
+        }		    				
+      }
+    }
 		    
-	else if(opt == 4){
-	  bufs[0] = '\0';
-	  strcat(bufs, "0 ");
-	  for(i = 0; i < total_livros-1; ++i){
-	    strcat(bufs, biblioteca[i].ISBN);
-	    strcat(bufs, "\n");
-	    strcat(bufs, biblioteca[i].titulo);
-	    strcat(bufs, biblioteca[i].descricao);
-	    sprintf(aux, "%d\n", biblioteca[i].estoque);
-	    strcat(bufs, aux);
-	    strcat(bufs, biblioteca[i].autor);
-	    strcat(bufs, biblioteca[i].editora);
-	    sprintf(aux, "%d\n\n", biblioteca[i].ano);
-	    strcat(bufs, aux);
-	  }
-	}
-		    	
-	else if(opt == 6){
-	  bufs[0] = '\0';
-	  strcat(bufs, "0 ");
-	  sscanf(buf, "%d %s", &opt, ISBN);
-	  for(i = 0; i < total_livros; ++i){
-	    if(strcmp(biblioteca[i].ISBN, ISBN) == 0){
-	      sprintf(aux, "%d\n", biblioteca[i].estoque);
-	      strcat(bufs, aux);
-	      break;
-	    }		    				
-	  }
-	}
-		    	
-	else if(opt == 5){
-	  bufs[0] = '\0';
-	  strcat(bufs, "0 ");
-	  sscanf(buf, "%d %s %d", &opt, ISBN, &qte);
-	  mudou = 1;
-	  for(i = 0; i < total_livros; ++i){
-	    if(strcmp(biblioteca[i].ISBN, ISBN) == 0){
-	      biblioteca[i].estoque = qte;
-	      break;
-	    }		    				
-	  }
-	}
-	
-	//pega tempo final
-	gettimeofday(&tempo_fim, NULL);
-	double tempo1, tempo2;
-	tempo1 = tempo_in.tv_sec + 0.000001*tempo_in.tv_usec;
-	tempo2 = tempo_fim.tv_sec + 0.000001*tempo_fim.tv_usec;
-	printf("\nTempo total: %lf\n", tempo2-tempo1);
-							
-	if (send(new_fd, bufs, strlen(bufs)+1, 0) == -1)
-	  perror("send");
-				
-	if(mudou){
-	  bufs[0] = '\0';
-	  for(i = 0; i < total_livros-1; ++i){
-	    strcat(bufs, biblioteca[i].ISBN);
-	    strcat(bufs, "\n");
-	    strcat(bufs, biblioteca[i].titulo);
-	    strcat(bufs, biblioteca[i].descricao);
-	    sprintf(aux, "%d\n", biblioteca[i].estoque);
-	    strcat(bufs, aux);
-	    strcat(bufs, biblioteca[i].autor);
-	    strcat(bufs, biblioteca[i].editora);
-	    sprintf(aux, "%d\n", biblioteca[i].ano);
-	    strcat(bufs, aux);			
-	  }
-	  FILE *fout = fopen("dados.txt", "w");
-	  fprintf(fout, "%s", bufs);
-	  fclose(fout);
-	}
-	/**/}	
-      close(new_fd);
-      exit(0);
+    else if(opt == 4){
+      bufs[0] = '\0';
+      for(i = 0; i < total_livros; ++i){
+        strcat(bufs, biblioteca[i].ISBN);
+        strcat(bufs, "\n");
+        strcat(bufs, biblioteca[i].titulo);
+        strcat(bufs, biblioteca[i].descricao);
+        sprintf(aux, "%d\n", biblioteca[i].estoque);
+        strcat(bufs, aux);
+        strcat(bufs, biblioteca[i].autor);
+        strcat(bufs, biblioteca[i].editora);
+        sprintf(aux, "%d\n", biblioteca[i].ano);
+        strcat(bufs, aux);    				
+      }
     }
-    close(new_fd);  // parent doesn't need this
-  }
+		    	
+    else if(opt == 6){
+      bufs[0] = '\0';
+      sscanf(buf, "%d %s", &opt, ISBN);
+      for(i = 0; i < total_livros; ++i){
+        if(strcmp(biblioteca[i].ISBN, ISBN) == 0){
+          sprintf(aux, "%d\n", biblioteca[i].estoque);
+          strcat(bufs, aux);
+          break;
+        }		    				
+      }
+    }
+		    	
+    else if(opt == 5){
+      bufs[0] = '\0';
+      sscanf(buf, "%d %s %d", &opt, ISBN, &qte);
+      mudou = 1;
+      for(i = 0; i < total_livros; ++i){
+        if(strcmp(biblioteca[i].ISBN, ISBN) == 0){
+          biblioteca[i].estoque = qte;
+          break;
+        }		    				
+      }
+    }
+       
+    //pega tempo final
+    gettimeofday(&tempo_fim, NULL);
+    double tempo1, tempo2;
+    tempo1 = tempo_in.tv_sec + 0.000001*tempo_in.tv_usec;
+    tempo2 = tempo_fim.tv_sec + 0.000001*tempo_fim.tv_usec;
+    printf("\nTempo total: %lf\n", tempo2-tempo1);
+
+    /* char msg[4] = "ok\n"; */
+    if ((numbytes = sendto(sockfd, bufs, strlen(bufs)+1, 0,
+                           (struct sockaddr *)&their_addr, addr_len)) == -1) {
+      perror("listener: sendto");
+      exit(1);
+    }                                
+				
+    if(mudou){
+      bufs[0] = '\0';
+      for(i = 0; i < total_livros-1; ++i){
+        strcat(bufs, biblioteca[i].ISBN);
+        strcat(bufs, "\n");
+        strcat(bufs, biblioteca[i].titulo);
+        strcat(bufs, biblioteca[i].descricao);
+        sprintf(aux, "%d\n", biblioteca[i].estoque);
+        strcat(bufs, aux);
+        strcat(bufs, biblioteca[i].autor);
+        strcat(bufs, biblioteca[i].editora);
+        sprintf(aux, "%d\n", biblioteca[i].ano);
+        strcat(bufs, aux);			
+      }
+      FILE *fout = fopen("dados.txt", "w");
+      fprintf(fout, "%s", bufs);
+      fclose(fout);
+    }
+  }					
+  close(sockfd);
+
   return 0;
 }
 \end{verbatim}
@@ -465,155 +426,140 @@ int main(void) {
 \section*{Anexo 2: Código do Cliente}
 
 \begin{verbatim}
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
-#include <netdb.h>
 #include <sys/types.h>
-#include <netinet/in.h>
 #include <sys/socket.h>
-#include <sys/time.h>
+#include <netinet/in.h>
 #include <arpa/inet.h>
+#include <netdb.h>
+#include <sys/time.h>
 
-#define PORT "3490" // the port client will be connecting to 
-
-#define MAXDATASIZE 200123 // max number of bytes we can get at once 
-
-// get sockaddr, IPv4 or IPv6:
-void *get_in_addr(struct sockaddr *sa)
-{
-  if (sa->sa_family == AF_INET) {
-    return &(((struct sockaddr_in*)sa)->sin_addr);
-  }
-
-  return &(((struct sockaddr_in6*)sa)->sin6_addr);
-}
+#define SERVERPORT "4950"    // the port users will be connecting to
+#define MAXDATASIZE 200123
 
 int main(int argc, char *argv[])
 {
-  int sockfd, numbytes;  
-  char buf[MAXDATASIZE];
-  struct addrinfo hints, *servinfo, *p;
-  int rv;
-  char s[INET6_ADDRSTRLEN];
-  int estoque;
+    int sockfd;
+    char buf[MAXDATASIZE];
+    struct addrinfo hints, *servinfo, *p;
+    struct sockaddr_storage their_addr;
+    socklen_t addr_len;
+    int rv;
+    int numbytes;
+    int estoque;
 
-  if (argc != 2) {
-    fprintf(stderr,"usage: client hostname\n");
-    exit(1);
-  }
-
-  memset(&hints, 0, sizeof hints);
-  hints.ai_family = AF_UNSPEC;
-  hints.ai_socktype = SOCK_STREAM;
-
-  if ((rv = getaddrinfo(argv[1], PORT, &hints, &servinfo)) != 0) {
-    fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
-    return 1;
-  }
-
-  // loop through all the results and connect to the first we can
-  for(p = servinfo; p != NULL; p = p->ai_next) {
-    if ((sockfd = socket(p->ai_family, p->ai_socktype,
-			 p->ai_protocol)) == -1) {
-      perror("client: socket");
-      continue;
+    if (argc != 2) {
+        fprintf(stderr,"usage: talker hostname\n");
+        exit(1);
     }
 
-    if (connect(sockfd, p->ai_addr, p->ai_addrlen) == -1) {
-      close(sockfd);
-      perror("client: connect");
-      continue;
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_DGRAM;
+
+    if ((rv = getaddrinfo(argv[1], SERVERPORT, &hints, &servinfo)) != 0) {
+        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
+        return 1;
     }
 
-    break;
-  }
+    // loop through all the results and make a socket
+    for(p = servinfo; p != NULL; p = p->ai_next) {
+        if ((sockfd = socket(p->ai_family, p->ai_socktype,
+                p->ai_protocol)) == -1) {
+            perror("talker: socket");
+            continue;
+        }
 
-  if (p == NULL) {
-    fprintf(stderr, "client: failed to connect\n");
-    return 2;
-  }
-
-  inet_ntop(p->ai_family, get_in_addr((struct sockaddr *)p->ai_addr),
-            s, sizeof s);
-  printf("client: connecting to %s\n", s);
-
-  freeaddrinfo(servinfo); // all done with this structure
-	
-  int opt, cont;
-  char ISBN[20];
-  char msg[MAXDATASIZE];
-  char pass[20];
-  int bytes_sent, len, bytes_rcv;
-	
-  while(1){
-    ISBN[0] = '\0';
-    //pseudo user interface
-    printf("Escolha uma opcao:\n");
-    printf("1- listar todos os ISBN e seus respectivos titulos\n");
-    printf("2- dado o ISBN de um livro, retornar descricao\n");
-    printf("3- dado o ISBN de um livro, retornar todas as informacoes do livro\n");
-    printf("4- listar todas as informacoes de todos os livros\n");
-    printf("5- alterar numero de exemplares em estoque\n");
-    printf("6- dado o ISBN de um livro, retornar numero de exemplares em estoque\n");
-    printf("7- fechar cliente\n");
-    scanf("%d", &opt);
-    if(opt == 7) break;
-    if(opt == 5){
-      printf("Digite a senha\n");
-      scanf(" %s", pass);
-      if(strcmp(pass, "senhalivraria") != 0)
-	continue;
-      else{
-	printf("Digite o ISBN\n");
-	scanf(" %s", ISBN);
-	printf("Digite o novo valor do estoque\n");
-	scanf("%d", &estoque);
-      }
-    }
-    if(opt == 2 || opt == 3 || opt == 6){
-      printf("Digite o ISBN\n");
-      scanf(" %s", ISBN);
-    }
-		
-    //escreve requisicao
-    if (opt == 5) sprintf(msg, "%d %s %d", opt, ISBN, estoque);
-    else sprintf(msg, "%d %s", opt, ISBN);  
-		
-		
-    //pega tempo inicial
-    struct timeval tempo_in, tempo_fim;
-    gettimeofday(&tempo_in, NULL);
-		
-    len = strlen(msg);
-    if((bytes_sent = send(sockfd, msg, len, 0)) != len){
-      printf("erro no send\n");
-      continue;	
-    }
-	
-    //le resultado
-    while(1){
-      if ((bytes_rcv = recv(sockfd, buf, MAXDATASIZE-1, 0)) == -1) {
-        perror("erro no recv");
         break;
-      }
-      sscanf(buf, "%d", &cont);    		    
-      printf("%s", buf+2);
-      if(cont == 0) break;
     }
+
+    if (p == NULL) {
+        fprintf(stderr, "talker: failed to bind socket\n");
+        return 2;
+    }
+    
+	int opt, cont;
+	char ISBN[20];
+	char msg[MAXDATASIZE];
+	char pass[20];
+	int bytes_sent, len, bytes_rcv;
+	
+	while(1){
+		ISBN[0] = '\0';
+		//pseudo user interface
+		printf("Escolha uma opcao:\n");
+		printf("1- listar todos os ISBN e seus respectivos titulos\n");
+		printf("2- dado o ISBN de um livro, retornar descricao\n");
+		printf("3- dado o ISBN de um livro, retornar todas as informacoes do livro\n");
+		printf("4- listar todas as informacoes de todos os livros\n");
+		printf("5- alterar numero de exemplares em estoque\n");
+		printf("6- dado o ISBN de um livro, retornar numero de exemplares em estoque\n");
+		printf("7- fechar cliente\n");
+		scanf("%d", &opt);
+		if(opt == 7) break;
+		if(opt == 5){
+			printf("Digite a senha\n");
+			scanf(" %s", pass);
+			if(strcmp(pass, "senhalivraria") != 0)
+			continue;
+			else{
+			  printf("Digite o ISBN\n");
+			  scanf(" %s", ISBN);
+			  printf("Digite o novo valor do estoque\n");
+			  scanf("%d", &estoque);
+			}
+		}
+		if(opt == 2 || opt == 3 || opt == 6){
+			printf("Digite o ISBN\n");
+			scanf(" %s", ISBN);
+		}
 		
-    //pega tempo final
-    gettimeofday(&tempo_fim, NULL);
-    double tempo1, tempo2;
-    tempo1 = tempo_in.tv_sec + 0.000001*tempo_in.tv_usec;
-    tempo2 = tempo_fim.tv_sec + 0.000001*tempo_fim.tv_usec;
-    printf("\nTempo total: %lf\n", tempo2-tempo1);
-  }
-  close(sockfd);
-  return 0;
+		//escreve requisicao
+		if (opt == 5) sprintf(msg, "%d %s %d", opt, ISBN, estoque);
+		else sprintf(msg, "%d %s", opt, ISBN);  
+		
+		
+		//pega tempo inicial
+		struct timeval tempo_in, tempo_fim;
+		gettimeofday(&tempo_in, NULL);
+		
+		len = strlen(msg);
+		
+		//envia requisicao
+		if ((numbytes = sendto(sockfd, msg, len, 0,
+		         p->ai_addr, p->ai_addrlen)) == -1) {
+		    perror("talker: sendto");
+		    exit(1);
+		}
+	
+		//le resultado
+		addr_len = sizeof their_addr;
+		if ((numbytes = recvfrom(sockfd, buf, MAXDATASIZE-1 , 0,
+	        (struct sockaddr *)&their_addr, &addr_len)) == -1) {
+       		perror("erro no recvfrom");
+       		exit(1);
+   		}
+   		
+	        sscanf(buf, "%d", &cont);    		    
+	        printf("%s", buf);
+
+		
+		//pega tempo final
+		gettimeofday(&tempo_fim, NULL);
+		double tempo1, tempo2;
+		tempo1 = tempo_in.tv_sec + 0.000001*tempo_in.tv_usec;
+		tempo2 = tempo_fim.tv_sec + 0.000001*tempo_fim.tv_usec;
+		printf("\nTempo total: %lf\n", tempo2-tempo1);
+	}
+
+    freeaddrinfo(servinfo);
+    close(sockfd);
+
+    return 0;
 }
 \end{verbatim}
 \end{document}
