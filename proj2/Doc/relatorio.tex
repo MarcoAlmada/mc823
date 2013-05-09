@@ -154,7 +154,7 @@ O tempo de consulta é o tempo decorrido entre imediatamente após o servidor re
 
 Como no projeto 1, o tempo de comunicação representou a maior parte do tempo total de atividade do cliente; há alguma diferença nos tempos de consulta, mas isso se deve ao fato de os servidores terem sido executados em máquinas com especificações diferentes, o que resulta em diferenças de desempenho nas operações locais.
 
-Os tempos médios de comunicação verificados no projeto 2 foram, em geral, menores do que os tempos verificados para as mesmas operações realizadas no projeto 1. A operação 4, por exemplo, fica em torno de 4 vezes mais rápida na implementação realizada no projeto 2, enquanto as operações 1 e 2 ficam 2,8 e 2,7 vezes mais rápidas, respectivamente. O ganho na operação 6 foi mais modesto: o tempo de comunicação foi diminuído pela metade. Já na operação 5, o tempo do UDP não foi muito menor que o tempo do TCP.
+Os tempos médios de comunicação verificados no projeto 2 foram, em geral, menores do que os tempos verificados para as mesmas operações realizadas no projeto 1. A operação 4, por exemplo, fica em torno de 4 vezes mais rápida na implementação realizada no projeto 2, enquanto as operações 1 e 2 ficam 2,8 e 2,7 vezes mais rápidas, respectivamente. O ganho na operação 6 foi mais modesto: o tempo de comunicação foi diminuído pela metade. Já na operação 5, que não envolve retorno para o cliente, o tempo do UDP não foi muito menor que o tempo do TCP.
 
 
 \section{Conclusão}
