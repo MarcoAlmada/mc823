@@ -152,9 +152,9 @@ por um único cliente.
 
 O tempo de consulta é o tempo decorrido entre imediatamente após o servidor receber a requisição e imediatamente antes de ele enviar a mensagem com a resposta. O tempo total é medido desde antes do envio da mensagem pelo cliente até depois do recebimento da resposta por ele, e o tempo de comunicação é metade da diferença entre esses tempos.
 
-Como no projeto 1, o tempo de comunicação representou a maior parte do tempo total de atividade do cliente; há alguma diferença no tempo de consulta, mas isso se deve ao fato de os servidores terem sido executados em máquinas diferentes, o que resulta em diferenças de desempenho nas operações locais.
+Como no projeto 1, o tempo de comunicação representou a maior parte do tempo total de atividade do cliente; há alguma diferença nos tempos de consulta, mas isso se deve ao fato de os servidores terem sido executados em máquinas com especificações diferentes, o que resulta em diferenças de desempenho nas operações locais.
 
-Os tempos médios de comunicação verificados no projeto 2 foram entre duas e dez vezes menores do que os tempos verificados para as mesmas operações realizadas no projeto 1, dependendo da operação realizada.
+Os tempos médios de comunicação verificados no projeto 2 foram, em geral, menores do que os tempos verificados para as mesmas operações realizadas no projeto 1. A operação 4, por exemplo, fica em torno de 4 vezes mais rápida na implementação realizada no projeto 2, enquanto as operações 1 e 2 ficam 2,8 e 2,7 vezes mais rápidas, respectivamente. O ganho na operação 6 foi mais modesto: o tempo de comunicação foi diminuído pela metade. Já na operação 5, o tempo do UDP não foi muito menor que o tempo do TCP.
 
 
 \section{Conclusão}
@@ -166,8 +166,11 @@ Na rede do IC, onde foram efetuados os testes cujos resultados foram apresentado
 Como o protocolo UDP não oferece garantias quanto à entrega dos datagramas, ao contrário do TCP, seria necessária a implementação de salvaguardas para garantir que o cliente conseguisse solicitar de novo as informações que fossem perdidas no percurso, além de um \emph{buffer} no servidor para armazenar as requisições recebidas e processá-las na ordem de recebimento.
 Porém, os alunos optaram por não realizar essas implementações neste projeto, tanto pelo sistema estar sendo usado em um contexto em que as perdas são bem pequenas (de fato, uma inspeção das saídas de teste revelou poucos erros em uma inspeção visual), mas também para evidenciar as diferenças entre as duas abordagens para comunicação.
 
-Como o \emph{overhead} do protocolo UDP é menor que o do TCP, uma vez que ele não estabelece conexão e não oferece várias das garantias do TCP, é esperado que o tempo de comunicação usando datagramas UDP seja menor que o tempo de comunicação com pacotes TCP, resultado verificado acima. 
+Já que o \emph{overhead} do protocolo UDP é menor que o do TCP, uma vez que ele não estabelece conexão e não oferece várias das garantias do TCP, é esperado que o tempo de comunicação usando datagramas UDP seja menor que o tempo de comunicação com pacotes TCP, resultado verificado acima. 
 Uma vez que os testes foram realizados na mesma rede, no mesmo dia da semana e aproximadamente no mesmo horário, podemos concluir que a maior parte dessa diferença se deve às diferenças entre os protocolos, já que os niveis de uso da rede são aproximadamente os mesmos.
+
+A diferença entre os tempos de comunicação com o UDP e com o TCP fica mais pronunciada com o aumento do tamanho da mensagem de retorno. 
+Com base na análise apresentada na seção de resultados, podemos ver que o ganho de desempenho com o UDP é pequeno no caso da operação 5, em que não há retorno de dados para o cliente, e cresce conforme o tamanho da mensagem de retorno aumenta, uma vez que os datagramas são transmitidos mais rapidamente.
 
 \section{Referências}
 
