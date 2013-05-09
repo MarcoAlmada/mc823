@@ -133,19 +133,16 @@ O pré-processamento pareceu uma opção viável, uma vez que não seria necess�
 número grande de livros. Assim, o consumo de memória é relativamente pequeno e há um ganho em desempenho. 
 Ao final de sua execução, o servidor salva seus dados em disco, efetivamente atualizando a versão permanente do banco de dados.
 Como a chance de panes no servidor é relativamente baixa, os riscos associados a essa escolha são poucos, mas um sistema mais robusto salvaria os dados de uma maneira mais eficiente. 
-O uso de um sistema gerenciador de banco de dados facilitaria o tratamento desse risco, e também de outro problema decorrente de nossa escolha: caso dois processos tentem editar o estoque em tempos parecidos, não há exclusão mútua implementada, de forma que se verifica uma corrida.
-Porém, uma vez utilizamos a suposição de que há apenas um cliente livraria, esta passa a ser uma preocupação menor; um sistema real com múltiplos usuários
-com privilégio de escrita necessitaria incluir um mecanismo de tratamento de concorrência.
+O uso de um sistema gerenciador de banco de dados facilitaria o tratamento desse risco.
 
 A comunicação com o protocolo UDP faz com que não haja o estabelecimento de uma conexão entre servidor e cliente, ao contrário do que ocorria na implementação em TCP, o que diminui o \emph{overhead} devido ao uso do protocolo, mas significa que não há proteção contra perda de datagramas, recebimento fora de ordem ou outros problemas na entrega dos datagramas (ou falta desta). Para lidar com tais problemas, seria necessário implementar mecanismos de controle no programa, de forma a replicar as facilidades oferecidas pelo protocolo TCP (ou um subconjunto conveniente destas).
 
 O tamanho adotado para os \emph{buffers} foi deliberadamente elevado, para que a preocupação em partir a mensagem em blocos adequados para transmissão não estivesse no nível da aplicação, mas sim fosse jogado para camadas mais baixas. Isso tornou prática a composição dos \emph{buffers}, que certamente terão tamanho o bastante para lidar com a pequena escala do banco de dados em questão.
 
-O uso de um sistema gerenciador de banco de dados, assim como o emprego de diretivas de semáforo ou \emph{mutexes}, eliminaria a chance de dois processos-filhos do servidor possuírem valores diferentes para o estoque, assim como facilitaria a criação de uma operação de adição de livros ao sistema. 
-O problema também poderia ser resolvido utilizando \emph{memory maps}, mas a pequena escala planejada para o projeto, assim como o intuito pedagógico, contribuiram para que tal solução fosse vista como algo de baixa prioridade.
-Graças a isso, a implementação realizada pode ter alguns problemas com consistência dos dados e robustez, mas que se fariam mais presentes só ao escalar o tamanho da base de dados e o número de clientes, não na escala de uso para o projeto.. 
+A implementação iterativa para o servidor UDP elimina o problema de concorrência que existia no servidor TCP: como não são realizados mais \emph{forks}, não ocorre mais o problema de dois clientes tentarem alterar o estoque de um livro ao mesmo tempo.
+Como as requisições são processadas de forma sequencial, não há condição de corrida.
 
-Também não foram adotadas medidas de segurança para o acesso com senha à base de dados.
+Não foram adotadas medidas de segurança para o acesso com senha à base de dados.
 
 \section{Resultados}
 
