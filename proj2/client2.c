@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
 		}
 	
 		//le resultado
-		while(1){
+		//while(1){
 			addr_len = sizeof their_addr;
 			if ((numbytes = recvfrom(sockfd, buf, MAXDATASIZE-1 , 0,
 		        (struct sockaddr *)&their_addr, &addr_len)) == -1) {
@@ -130,11 +130,11 @@ int main(int argc, char *argv[])
 		    }*/
 		    sscanf(buf, "%d", &cont);    		    
 		    printf("%s", buf);
-		    if(cont == 0) break;
+		   // if(cont == 0) break;
 		    //		    printf("%d\n", cont);
 		    //       		    printf("%s", buf+2);
 		    //		    printf("\n%d", cont);
-		}
+		//}
 		
 		//pega tempo final
 		gettimeofday(&tempo_fim, NULL);

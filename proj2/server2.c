@@ -146,7 +146,7 @@ int main(void)
 		    	
     if(opt == 1){
       bufs[0] = '\0';
-      strcat(bufs, "0 ");
+      //strcat(bufs, "0 ");
       for(i = 0; i < total_livros; ++i){
         strcat(bufs, biblioteca[i].ISBN);
         strcat(bufs, " ");
@@ -156,7 +156,7 @@ int main(void)
 		    	
     else if(opt == 2){
       bufs[0] = '\0';
-      strcat(bufs, "0 ");
+      //strcat(bufs, "0 ");
       sscanf(buf, "%d %s", &opt, ISBN);
       for(i = 0; i < total_livros; ++i){
         if(strcmp(biblioteca[i].ISBN, ISBN) == 0){
@@ -168,7 +168,7 @@ int main(void)
 		    	
     else if(opt == 3){
       bufs[0] = '\0';
-      strcat(bufs, "0 ");
+      //strcat(bufs, "0 ");
       sscanf(buf, "%d %s", &opt, ISBN);
       for(i = 0; i < total_livros; ++i){
         if(strcmp(biblioteca[i].ISBN, ISBN) == 0){
@@ -189,7 +189,7 @@ int main(void)
 		    
     else if(opt == 4){
       bufs[0] = '\0';
-      strcat(bufs, "0 ");
+      //strcat(bufs, "0 ");
       //sscanf(buf, "%d %s", &opt, ISBN);
       for(i = 0; i < total_livros; ++i){
         //if(strcmp(biblioteca[i].ISBN, ISBN) == 0){
@@ -210,7 +210,7 @@ int main(void)
 		    	
     else if(opt == 6){
       bufs[0] = '\0';
-      strcat(bufs, "0 ");
+      //strcat(bufs, "0 ");
       sscanf(buf, "%d %s", &opt, ISBN);
       for(i = 0; i < total_livros; ++i){
         if(strcmp(biblioteca[i].ISBN, ISBN) == 0){
@@ -223,7 +223,7 @@ int main(void)
 		    	
     else if(opt == 5){
       bufs[0] = '\0';
-      strcat(bufs, "0 ");
+      //strcat(bufs, "0 ");
       sscanf(buf, "%d %s %d", &opt, ISBN, &qte);
       mudou = 1;
       for(i = 0; i < total_livros; ++i){
