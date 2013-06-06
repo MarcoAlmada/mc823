@@ -27,52 +27,74 @@ public class Server implements Biblio {
 	private ArrayList<String> editora = new ArrayList<String> ();
 	private ArrayList<Integer> ano = new ArrayList<Integer> ();
 	
+	//variaveis para contagem de tempo
+	long inicio = 0, fim = 0;
+	double sec;
+	
 	/*Pre-processamento: Os dados do banco serao armazenados na
 	nas 7 ArrayList declaradas acima*/
 	private void preparaDados(){
 		File file = new File("dados.txt");
 		try{
 			Scanner sc = new Scanner(file);
-			String line = new String();
 			while (sc.hasNextLine()) {
-		        line = sc.nextLine();
-		        ISBN.add(line);
-		        line = sc.nextLine();
-		        titulo.add(line);
-		        line = sc.nextLine();
-		        descricao.add(line);
-		        line = sc.nextLine();
-		        estoque.add(Integer.parseInt(line));
-		        line = sc.nextLine();
-		        autor.add(line);
-		        line = sc.nextLine();
-		        editora.add(line);            
-		        line = sc.nextLine();
-		        ano.add(Integer.parseInt(line));                
+		        ISBN.add(sc.nextLine());
+		        titulo.add(sc.nextLine());
+		        descricao.add(sc.nextLine());
+		        estoque.add(Integer.parseInt(sc.nextLine()));
+		        autor.add(sc.nextLine());
+		        editora.add(sc.nextLine());            
+				ano.add(Integer.parseInt(sc.nextLine()));                
 		    }
 		    sc.close();
 		} catch (FileNotFoundException e) {
             e.printStackTrace();
         }
 	}
-
+	
+	//Operacao 1
     public String listaISBN() {
-		return Arrays.toString(ISBN.toArray());
+    	//tempo inicial
+    	inicio = System.nanoTime();
+    	//processa requisicao
+    	String response = Arrays.toString(ISBN.toArray());
+    	//imprime tempo final
+    	fim = System.nanoTime();
+		sec = fim-inicio;
+	    sec /= 1000000000;
+	    System.out.print("Tempo da operacao: ");
+	    System.out.printf("%.9f\n", sec);
+
+		return response;
     }
     
+    //Operacao 2
     public String retornaDescricao(String isbn) {
+    	//tempo inicial
+    	inicio = System.nanoTime();
+    	//processa requisicao
     	String response = new String();
 		for (int i = 0; i < ISBN.size(); i++) {
 			String str = ISBN.get(i);
-			System.out.println(str);
 			if(str.compareTo(isbn) == 0){
 				response = descricao.get(i);
 			}
 		}
+		//imprime tempo final
+    	fim = System.nanoTime();
+		sec = fim-inicio;
+	    sec /= 1000000000;
+	    System.out.print("Tempo da operacao: ");
+	    System.out.printf("%.9f\n", sec);
+	    
 		return response;
     }
     
+    //Operacao 3
     public String retornaInfo(String isbn) {
+    	//tempo inicial
+    	inicio = System.nanoTime();
+    	//processa requisicao
 		String response = new String();
 		for (int i = 0; i < ISBN.size(); i++) {
 			String str = ISBN.get(i);
@@ -87,6 +109,13 @@ public class Server implements Biblio {
 				response += ano.get(i);
 			}
 		}
+		//imprime tempo final
+    	fim = System.nanoTime();
+		sec = fim-inicio;
+	    sec /= 1000000000;
+	    System.out.print("Tempo da operacao: ");
+	    System.out.printf("%.9f\n", sec);
+		
 		return response;
     }
 	

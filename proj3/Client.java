@@ -27,18 +27,21 @@ public class Client {
 	    	double sec;
 	    	
 	    	if(opt == 1){
+	    		//contagem de tempo e chamada
 	    		inicio = System.nanoTime();
 	    		response = stub.listaISBN();
 	    		fim = System.nanoTime();
 	    	}
 	    	if(opt == 2){
 	    		String isbn = sc.next();
+	    		//contagem de tempo e chamada
 	    		inicio = System.nanoTime();
 	    		response = stub.retornaDescricao(isbn);
 	    		fim = System.nanoTime();
 	    	}
 	    	if(opt == 3){
 	    		String isbn = sc.next();
+	    		//contagem de tempo e chamada
 	    		inicio = System.nanoTime();
 	    		response = stub.retornaInfo(isbn);
 	    		fim = System.nanoTime();
@@ -47,7 +50,7 @@ public class Client {
 	    	System.out.println(response);
 	    	sec = fim-inicio;
 	    	sec /= 1000000000;
-	    	System.out.print("Tempo da operacao "+opt+": ");
+	    	System.out.print("Tempo da operacao: ");
 	    	System.out.printf("%.9f\n", sec);
 	    }
 	    
