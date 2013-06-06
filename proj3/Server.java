@@ -12,12 +12,22 @@ public class Server implements Biblio {
 	
     public Server() {}
     
-    //private ArrayList<String>  = new ArrayList<String> ();
+    private ArrayList<String> ISBN = new ArrayList<String> ();
+    private ArrayList<String> titulo = new ArrayList<String> ();
+    private ArrayList<String> descricao = new ArrayList<String> ();
+	private ArrayList<Integer> estoque = new ArrayList<Integer> ();
+	private ArrayList<String> autor = new ArrayList<String> ();
+	private ArrayList<String> editora = new ArrayList<String> ();
+	private ArrayList<Integer> ano = new ArrayList<Integer> ();
 
-	//private void preparaDados(){
-	
-	
-	//}
+	/*private void preparaDados(){
+		Scanner sc = new Scanner(dados.txt);
+		while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                System.out.println(line);
+            }
+            scanner.close();
+	}*/
 
     public String listaISBN() {
 	return "Lista ISBN";
