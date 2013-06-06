@@ -14,7 +14,9 @@ import java.util.Scanner;
 	
 public class Server implements Biblio {
 	
-    public Server() {}
+    public Server() {
+    	preparaDados();	
+    }
     
     private ArrayList<String> ISBN = new ArrayList<String> ();
     private ArrayList<String> titulo = new ArrayList<String> ();
@@ -23,7 +25,9 @@ public class Server implements Biblio {
 	private ArrayList<String> autor = new ArrayList<String> ();
 	private ArrayList<String> editora = new ArrayList<String> ();
 	private ArrayList<Integer> ano = new ArrayList<Integer> ();
-
+	
+	/*Pre-processamento: Os dados do banco serao armazenados na
+	nas 7 ArrayList declaradas acima*/
 	private void preparaDados(){
 		File file = new File("dados.txt");
 		try{
@@ -45,13 +49,13 @@ public class Server implements Biblio {
 		        line = sc.nextLine();
 		        ano.add(Integer.parseInt(line));                
 		    }
-		    System.out.println( Arrays.toString(ISBN.toArray()));
+		   /* System.out.println( Arrays.toString(ISBN.toArray()));
 		    System.out.println( Arrays.toString(titulo.toArray()));
 		    System.out.println( Arrays.toString(descricao.toArray()));
 		    System.out.println( Arrays.toString(estoque.toArray()));
 		    System.out.println( Arrays.toString(autor.toArray()));
 		    System.out.println( Arrays.toString(editora.toArray()));
-		    System.out.println( Arrays.toString(ano.toArray()));
+		    System.out.println( Arrays.toString(ano.toArray()));*/
 		    sc.close();
 		} catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -59,16 +63,37 @@ public class Server implements Biblio {
 	}
 
     public String listaISBN() {
-    preparaDados();
-	return "Lista ISBN";
+		return Arrays.toString(ISBN.toArray());
     }
     
-    public String retornaDescricao(int ISBN) {
-	return "Retorna Descricao " + ISBN;
+    public String retornaDescricao(String isbn) {
+    	String response = new String();
+		for (int i = 0; i < ISBN.size(); i++) {
+			String str = ISBN.get(i);
+			System.out.println(str);
+			if(str.compareTo(isbn) == 0){
+				response = descricao.get(i);
+			}
+		}
+		return response;
     }
     
-    public String retornaInfo(int ISBN) {
-	return "Retorna info " + ISBN;
+    public String retornaInfo(String isbn) {
+		String response = new String();
+		for (int i = 0; i < ISBN.size(); i++) {
+			String str = ISBN.get(i);
+			System.out.println(str);
+			if(str.compareTo(isbn) == 0){
+				response = isbn + "\n";
+				response += titulo.get(i) + "\n";
+				response += descricao.get(i) + "\n";
+				response += estoque.get(i) + "\n";
+				response += autor.get(i) + "\n";
+				response += editora.get(i) + "\n";
+				response += ano.get(i);
+			}
+		}
+		return response;
     }
 	
     public static void main(String args[]) {
@@ -80,7 +105,6 @@ public class Server implements Biblio {
 	    // Bind the remote object's stub in the registry
 	    Registry registry = LocateRegistry.getRegistry();
 	    registry.bind("Biblio", stub);
-
 	    System.err.println("Server ready");
 	} catch (Exception e) {
 	    System.err.println("Server exception: " + e.toString());

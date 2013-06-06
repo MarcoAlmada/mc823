@@ -26,15 +26,15 @@ public class Client {
 	    		response = stub.listaISBN();
 	    	}
 	    	if(opt == 2){
-	    		int ISBN = sc.nextInt();
-	    		response = stub.retornaDescricao(ISBN);
+	    		String isbn = sc.next();
+	    		response = stub.retornaDescricao(isbn);
 	    	}
 	    	if(opt == 3){
-	    		int ISBN = sc.nextInt();
-	    		response = stub.retornaInfo(ISBN);
+	    		String isbn = sc.next();
+	    		response = stub.retornaInfo(isbn);
 	    	}
 	    
-	    	System.out.println("response: " + response);
+	    	System.out.println(response);
 	    	
 	    }
 	    
