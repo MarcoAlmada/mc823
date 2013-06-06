@@ -4,13 +4,31 @@ import java.rmi.registry.Registry;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 	
 public class Server implements Biblio {
 	
     public Server() {}
+    
+    //private ArrayList<String>  = new ArrayList<String> ();
+
+	//private void preparaDados(){
+	
+	
+	//}
 
     public String listaISBN() {
-	return "Hello, world!";
+	return "Lista ISBN";
+    }
+    
+    public String retornaDescricao(int ISBN) {
+	return "Retorna Descricao " + ISBN;
+    }
+    
+    public String retornaInfo(int ISBN) {
+	return "Retorna info " + ISBN;
     }
 	
     public static void main(String args[]) {
