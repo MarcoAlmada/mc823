@@ -3,6 +3,7 @@ package example.biblio;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.Scanner;
+import java.util.InputMismatchException;
 
 public class Client {
 
@@ -18,7 +19,13 @@ public class Client {
 	    //loop de leitura do teclado e processamento das requisicoes
 	    while(true){
 	 		Scanner sc = new Scanner(System.in);
-	    	int opt = sc.nextInt();
+	 		int opt = 0;
+	 		try{
+	 			System.out.println("Digite o numero da operacao");
+		    	opt = sc.nextInt();
+		    } catch (InputMismatchException e) {
+   				System.out.println("Digite o numero da operacao");
+			}
 	    	
 	    	String response = new String(); //resposta do servidor
 	    

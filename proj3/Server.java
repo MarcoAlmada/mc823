@@ -54,11 +54,13 @@ public class Server implements Biblio {
 	
 	//Operacao 1
     public String listaISBN() {
-    	//tempo inicial
+    	//obtem tempo inicial
     	inicio = System.nanoTime();
+    	
     	//processa requisicao
     	String response = Arrays.toString(ISBN.toArray());
-    	//imprime tempo final
+    	
+    	//obtem tempo final e imprime
     	fim = System.nanoTime();
 		sec = fim-inicio;
 	    sec /= 1000000000;
@@ -70,8 +72,9 @@ public class Server implements Biblio {
     
     //Operacao 2
     public String retornaDescricao(String isbn) {
-    	//tempo inicial
+    	//obtem tempo inicial
     	inicio = System.nanoTime();
+    	
     	//processa requisicao
     	String response = new String();
 		for (int i = 0; i < ISBN.size(); i++) {
@@ -80,7 +83,8 @@ public class Server implements Biblio {
 				response = descricao.get(i);
 			}
 		}
-		//imprime tempo final
+		
+		//obtem tempo final e imprime
     	fim = System.nanoTime();
 		sec = fim-inicio;
 	    sec /= 1000000000;
@@ -92,13 +96,13 @@ public class Server implements Biblio {
     
     //Operacao 3
     public String retornaInfo(String isbn) {
-    	//tempo inicial
+    	//obtem tempo inicial
     	inicio = System.nanoTime();
+    	
     	//processa requisicao
 		String response = new String();
 		for (int i = 0; i < ISBN.size(); i++) {
 			String str = ISBN.get(i);
-			System.out.println(str);
 			if(str.compareTo(isbn) == 0){
 				response = isbn + "\n";
 				response += titulo.get(i) + "\n";
@@ -109,7 +113,8 @@ public class Server implements Biblio {
 				response += ano.get(i);
 			}
 		}
-		//imprime tempo final
+		
+		//obtem tempo final e imprime 
     	fim = System.nanoTime();
 		sec = fim-inicio;
 	    sec /= 1000000000;
