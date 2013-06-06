@@ -22,20 +22,33 @@ public class Client {
 	    	
 	    	String response = new String(); //resposta do servidor
 	    
+	    	//contagem de tempo
+	    	long inicio = 0, fim = 0;
+	    	double sec;
+	    	
 	    	if(opt == 1){
+	    		inicio = System.nanoTime();
 	    		response = stub.listaISBN();
+	    		fim = System.nanoTime();
 	    	}
 	    	if(opt == 2){
 	    		String isbn = sc.next();
+	    		inicio = System.nanoTime();
 	    		response = stub.retornaDescricao(isbn);
+	    		fim = System.nanoTime();
 	    	}
 	    	if(opt == 3){
 	    		String isbn = sc.next();
+	    		inicio = System.nanoTime();
 	    		response = stub.retornaInfo(isbn);
+	    		fim = System.nanoTime();
 	    	}
-	    
-	    	System.out.println(response);
 	    	
+	    	System.out.println(response);
+	    	sec = fim-inicio;
+	    	sec /= 1000000000;
+	    	System.out.print("Tempo da operacao "+opt+": ");
+	    	System.out.printf("%.9f\n", sec);
 	    }
 	    
 	} catch (Exception e) {

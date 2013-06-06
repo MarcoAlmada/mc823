@@ -18,6 +18,7 @@ public class Server implements Biblio {
     	preparaDados();	
     }
     
+    //ArrayLists armazenarao banco de dados da biblioteca
     private ArrayList<String> ISBN = new ArrayList<String> ();
     private ArrayList<String> titulo = new ArrayList<String> ();
     private ArrayList<String> descricao = new ArrayList<String> ();
@@ -49,13 +50,6 @@ public class Server implements Biblio {
 		        line = sc.nextLine();
 		        ano.add(Integer.parseInt(line));                
 		    }
-		   /* System.out.println( Arrays.toString(ISBN.toArray()));
-		    System.out.println( Arrays.toString(titulo.toArray()));
-		    System.out.println( Arrays.toString(descricao.toArray()));
-		    System.out.println( Arrays.toString(estoque.toArray()));
-		    System.out.println( Arrays.toString(autor.toArray()));
-		    System.out.println( Arrays.toString(editora.toArray()));
-		    System.out.println( Arrays.toString(ano.toArray()));*/
 		    sc.close();
 		} catch (FileNotFoundException e) {
             e.printStackTrace();
