@@ -7,6 +7,10 @@ import java.rmi.server.UnicastRemoteObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Scanner;
 	
 public class Server implements Biblio {
 	
@@ -20,16 +24,42 @@ public class Server implements Biblio {
 	private ArrayList<String> editora = new ArrayList<String> ();
 	private ArrayList<Integer> ano = new ArrayList<Integer> ();
 
-	/*private void preparaDados(){
-		Scanner sc = new Scanner(dados.txt);
-		while (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                System.out.println(line);
-            }
-            scanner.close();
-	}*/
+	private void preparaDados(){
+		File file = new File("dados.txt");
+		try{
+			Scanner sc = new Scanner(file);
+			String line = new String();
+			while (sc.hasNextLine()) {
+		        line = sc.nextLine();
+		        ISBN.add(line);
+		        line = sc.nextLine();
+		        titulo.add(line);
+		        line = sc.nextLine();
+		        descricao.add(line);
+		        line = sc.nextLine();
+		        estoque.add(Integer.parseInt(line));
+		        line = sc.nextLine();
+		        autor.add(line);
+		        line = sc.nextLine();
+		        editora.add(line);            
+		        line = sc.nextLine();
+		        ano.add(Integer.parseInt(line));                
+		    }
+		    System.out.println( Arrays.toString(ISBN.toArray()));
+		    System.out.println( Arrays.toString(titulo.toArray()));
+		    System.out.println( Arrays.toString(descricao.toArray()));
+		    System.out.println( Arrays.toString(estoque.toArray()));
+		    System.out.println( Arrays.toString(autor.toArray()));
+		    System.out.println( Arrays.toString(editora.toArray()));
+		    System.out.println( Arrays.toString(ano.toArray()));
+		    sc.close();
+		} catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+	}
 
     public String listaISBN() {
+    preparaDados();
 	return "Lista ISBN";
     }
     
