@@ -22,37 +22,37 @@ public class Server implements Biblio {
     private ArrayList<String> ISBN = new ArrayList<String> ();
     private ArrayList<String> titulo = new ArrayList<String> ();
     private ArrayList<String> descricao = new ArrayList<String> ();
-	private ArrayList<Integer> estoque = new ArrayList<Integer> ();
-	private ArrayList<String> autor = new ArrayList<String> ();
-	private ArrayList<String> editora = new ArrayList<String> ();
-	private ArrayList<Integer> ano = new ArrayList<Integer> ();
-	
-	//variaveis para contagem de tempo
-	long inicio = 0, fim = 0;
-	double sec;
-	
-	/*Pre-processamento: Os dados do banco serao armazenados na
-	nas 7 ArrayList declaradas acima*/
-	private void preparaDados(){
-		File file = new File("dados.txt");
-		try{
-			Scanner sc = new Scanner(file);
-			while (sc.hasNextLine()) {
-		        ISBN.add(sc.nextLine());
-		        titulo.add(sc.nextLine());
-		        descricao.add(sc.nextLine());
-		        estoque.add(Integer.parseInt(sc.nextLine()));
-		        autor.add(sc.nextLine());
-		        editora.add(sc.nextLine());            
-				ano.add(Integer.parseInt(sc.nextLine()));                
-		    }
-		    sc.close();
-		} catch (FileNotFoundException e) {
+    private ArrayList<Integer> estoque = new ArrayList<Integer> ();
+    private ArrayList<String> autor = new ArrayList<String> ();
+    private ArrayList<String> editora = new ArrayList<String> ();
+    private ArrayList<Integer> ano = new ArrayList<Integer> ();
+    
+    //variaveis para contagem de tempo
+    long inicio = 0, fim = 0;
+    double sec;
+    
+    /*Pre-processamento: Os dados do banco serao armazenados na
+      nas 7 ArrayList declaradas acima*/
+    private void preparaDados(){
+        File file = new File("dados.txt");
+        try{
+            Scanner sc = new Scanner(file);
+            while (sc.hasNextLine()) {
+                ISBN.add(sc.nextLine());
+                titulo.add(sc.nextLine());
+                descricao.add(sc.nextLine());
+                estoque.add(Integer.parseInt(sc.nextLine()));
+                autor.add(sc.nextLine());
+                editora.add(sc.nextLine());            
+                ano.add(Integer.parseInt(sc.nextLine()));                
+            }
+            sc.close();
+        } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-	}
+    }
 	
-	//Operacao 1
+    //Operacao 1
     public String listaISBN() {
     	//obtem tempo inicial
     	inicio = System.nanoTime();
@@ -62,67 +62,143 @@ public class Server implements Biblio {
     	
     	//obtem tempo final e imprime
     	fim = System.nanoTime();
-		sec = fim-inicio;
-	    sec /= 1000000000;
-	    System.out.print("Tempo da operacao: ");
-	    System.out.printf("%.9f\n", sec);
+        sec = fim-inicio;
+        sec /= 1000000000;
+        System.out.print("Tempo da operacao: ");
+        System.out.printf("%.9f\n", sec);
 
-		return response;
+        return response;
     }
     
     //Operacao 2
     public String retornaDescricao(String isbn) {
     	//obtem tempo inicial
     	inicio = System.nanoTime();
-    	
+    		
     	//processa requisicao
     	String response = new String();
-		for (int i = 0; i < ISBN.size(); i++) {
-			String str = ISBN.get(i);
-			if(str.compareTo(isbn) == 0){
-				response = descricao.get(i);
-			}
-		}
-		
-		//obtem tempo final e imprime
+        for (int i = 0; i < ISBN.size(); i++) {
+            String str = ISBN.get(i);
+            if(str.compareTo(isbn) == 0){
+                response = descricao.get(i);
+            }
+        }
+	
+        //obtem tempo final e imprime
     	fim = System.nanoTime();
-		sec = fim-inicio;
-	    sec /= 1000000000;
-	    System.out.print("Tempo da operacao: ");
-	    System.out.printf("%.9f\n", sec);
+        sec = fim-inicio;
+        sec /= 1000000000;
+        System.out.print("Tempo da operacao: ");
+        System.out.printf("%.9f\n", sec);
 	    
-		return response;
+        return response;
     }
     
     //Operacao 3
-    public String retornaInfo(String isbn) {
+     public String retornaInfo(String isbn) {
+    	//obtem tempo inicial
+    	inicio = System.nanoTime();
+   	
+    	//processa requisicao
+        String response = new String();
+        for (int i = 0; i < ISBN.size(); i++) {
+            String str = ISBN.get(i);
+            if(str.compareTo(isbn) == 0){
+                response = isbn + "\n";
+                response += titulo.get(i) + "\n";
+                response += descricao.get(i) + "\n";
+                response += estoque.get(i) + "\n";
+                response += autor.get(i) + "\n";
+                response += editora.get(i) + "\n";
+                response += ano.get(i);
+            }
+        }
+		
+        //obtem tempo final e imprime 
+    	fim = System.nanoTime();
+        sec = fim-inicio;
+        sec /= 1000000000;
+        System.out.print("Tempo da operacao: ");
+        System.out.printf("%.9f\n", sec);
+		
+        return response;
+    }
+
+    //operacao 4
+    public String retornaTudo() {
     	//obtem tempo inicial
     	inicio = System.nanoTime();
     	
-    	//processa requisicao
-		String response = new String();
-		for (int i = 0; i < ISBN.size(); i++) {
-			String str = ISBN.get(i);
-			if(str.compareTo(isbn) == 0){
-				response = isbn + "\n";
-				response += titulo.get(i) + "\n";
-				response += descricao.get(i) + "\n";
-				response += estoque.get(i) + "\n";
-				response += autor.get(i) + "\n";
-				response += editora.get(i) + "\n";
-				response += ano.get(i);
-			}
-		}
-		
-		//obtem tempo final e imprime 
+        //processa requisicao
+        String response = new String();
+        for (int i = 0; i < ISBN.size(); i++) {
+            response += ISBN.get(i) + "\n";
+            response += titulo.get(i) + "\n";
+            response += descricao.get(i) + "\n";
+            response += estoque.get(i) + "\n";
+            response += autor.get(i) + "\n";
+            response += editora.get(i) + "\n";
+            response += ano.get(i) + "\n";          
+        }
+
+        //obtem tempo final e imprime 
     	fim = System.nanoTime();
-		sec = fim-inicio;
-	    sec /= 1000000000;
-	    System.out.print("Tempo da operacao: ");
-	    System.out.printf("%.9f\n", sec);
+        sec = fim-inicio;
+        sec /= 1000000000;
+        System.out.print("Tempo da operacao: ");
+        System.out.printf("%.9f\n", sec);
+
+        return response;
 		
-		return response;
     }
+
+    //operacao 5
+    public void alteraEstoque(String isbn, int valor) {
+    	//obtem tempo inicial
+    	inicio = System.nanoTime();
+
+    	//processa requisicao
+    	String response = new String();
+        for (int i = 0; i < ISBN.size(); i++) {
+            String str = ISBN.get(i);
+            if(str.compareTo(isbn) == 0){
+                estoque.set(i, valor);
+            }
+        }
+
+        //obtem tempo final e imprime 
+    	fim = System.nanoTime();
+        sec = fim-inicio;
+        sec /= 1000000000;
+        System.out.print("Tempo da operacao: ");
+        System.out.printf("%.9f\n", sec);
+    }
+
+    //operacao 6
+    public int retornaEstoque(String isbn) {
+        int estoqueVal = 0;
+    	//obtem tempo inicial
+    	inicio = System.nanoTime();
+
+    	//processa requisicao
+    	String response = new String();
+        for (int i = 0; i < ISBN.size(); i++) {
+            String str = ISBN.get(i);
+            if(str.compareTo(isbn) == 0){
+                estoqueVal = estoque.get(i);
+            }
+        }
+
+        //obtem tempo final e imprime 
+    	fim = System.nanoTime();
+        sec = fim-inicio;
+        sec /= 1000000000;
+        System.out.print("Tempo da operacao: ");
+        System.out.printf("%.9f\n", sec);
+		
+        return estoqueVal;
+    }
+
 	
     public static void main(String args[]) {
 	
