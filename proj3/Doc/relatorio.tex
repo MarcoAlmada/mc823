@@ -96,7 +96,7 @@ O cliente pode efetuar três tipos de operações: listar todos os livros (o cli
 \section{Implementação}
 
 
-A implementação do sistema de livraria neste projeto foi bastate semelhante à implementação dos projetos anteriores, porém dessa vez aproveitando o nível de abstração mais alto da linguagem Java. Os códigos do cliente, do servidor e da interface para as diferentes operações com a biblioteca.
+A implementação do sistema de livraria neste projeto foi bastate semelhante à implementação dos projetos anteriores, porém dessa vez aproveitando o nível de abstração mais alto da linguagem Java. Os códigos os códigos estão divididos em código do cliente, do servidor e da interface para as diferentes operações com a biblioteca.
 
 A interface remota \texttt{Biblio} define os métodos que poderão ser invocados remotamente pelo cliente e as exceções remotas que estes retornam caso necessário. Suas implementações são realizadas no código do servidor, e o cliente faz as chamadas de métodos.
 
@@ -120,7 +120,9 @@ Ao final de sua execução, o servidor salva seus dados em disco, efetivamente a
 Como a chance de panes no servidor é relativamente baixa, os riscos associados a essa escolha são poucos, mas um sistema mais robusto salvaria os dados de uma maneira mais eficiente. 
 O uso de um sistema gerenciador de banco de dados facilitaria o tratamento desse risco.
 
-O emprego de constructos com maior nível de abstração simplificou bastante a implementação do código. Porém, isso se refletiu em um \emph{overhead} maior, tanto no código do cliente e do servidor em comparação com suas versões em C quanto na comunicação em RMI em comparação com os \emph{sockets}.
+O emprego de constructos com maior nível de abstração simplificou bastante a implementação do código. Com o uso de RMI, é possível abstrair a rede e chamar um método implementado no servidor como se fosse um método local. A implementação com seckets, por outro lado, é mais baixo nível e exigiu a criação de protocolos específicos para a nossa aplicação para que cliente e servidor se comunicassem. Porém, isso se refletiu em um \emph{overhead} maior, tanto no código do cliente e do servidor em comparação com suas versões em C quanto na comunicação em RMI em comparação com os \emph{sockets}.
+
+Outra vantagem em relação ao UDP é o fato de o RMI usar comunicação confiável (TCP/IP). 
 
 Não foram adotadas medidas de segurança para o acesso com senha à base de dados. Também no aspecto da segurança, decidiu-se não usar um \texttt{SecurityManager} no código do servidor, que serviria para a proteção dos recursos de sistema. 
 Além de apresentar um risco de segurança, isso também resulta em uma restrição das funcionalidades disponíveis, devido às medidas de segurança adotadas pelo RMI.
@@ -421,12 +423,15 @@ public class Client {
 	    	long inicio = 0, fim = 0;
 	    	double sec;
 	    	
+                //operacao 1
 	    	if(opt == 1){
                     //contagem de tempo e chamada
                     inicio = System.nanoTime();
                     response = stub.listaISBN();
                     fim = System.nanoTime();
 	    	}
+
+                //operacao2
 	    	if(opt == 2){
                     System.out.println("Digite o ISBN do livro");
                     String isbn = sc.next();
@@ -435,7 +440,8 @@ public class Client {
                     response = stub.retornaDescricao(isbn);
                     fim = System.nanoTime();
 	    	}
-                
+
+                //operacao 3
 	    	if(opt == 3){
                     System.out.println("Digite o ISBN do livro");
                     String isbn = sc.next();
@@ -444,7 +450,8 @@ public class Client {
                     response = stub.retornaInfo(isbn);
                     fim = System.nanoTime();
 	    	}
-
+                
+                //operacao 4
                 if(opt == 4){
                     //contagem de tempo e chamada
                     inicio = System.nanoTime();
@@ -452,6 +459,7 @@ public class Client {
                     fim = System.nanoTime();
                 }
                 
+                //operacao 5
                 if(opt == 5){
                     System.out.println("Digite a senha");
                     String senha = sc.next(); // verifica se cliente tem autorizacao
@@ -469,7 +477,8 @@ public class Client {
                         System.out.println("Senha invalida.");
                     }
                 }
-
+                 
+                //operacao 6
                 if(opt == 6){
                     System.out.println("Digite o ISBN do livro");
                     String isbn = sc.next();
@@ -478,11 +487,13 @@ public class Client {
                     response += stub.retornaEstoque(isbn);
                     fim = System.nanoTime();
                 }
-                
+
+                //opcao para cliente sair da aplicacao
                 if(opt == 7){
                     System.exit(0);
                 }
-	    	
+
+	    	//imprime tempo total
 	    	System.out.println(response);
 	    	sec = fim-inicio;
 	    	sec /= 1000000000;
