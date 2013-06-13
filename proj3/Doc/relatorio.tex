@@ -78,7 +78,7 @@
 
 \section{Introdução}
 
-O presente relatório tem como objetivo descrever a implementação e os resultados do segundo projeto de MC823 no primeiro semestre de 2013, comparando-os com o resultados obtidos no primeiro projeto. Tal como o Projeto 1, este projeto consistia na implementação de um sistema para consulta e controle de estoque em uma biblioteca, utilizando uma arquitetura cliente-servidor. Entretanto, a implementação o sistema desta vez utilizou o protocolo de camada de transporte UDP, ao invés de TCP.
+O presente relatório tem como objetivo descrever a implementação e os resultados do terceiro projeto de MC823 no primeiro semestre de 2013, comparando-os com o resultados obtidos nos dois primeiros projetos. Tal como os Projetos 1 e 2, este projeto consistia na implementação de um sistema para consulta e controle de estoque em uma biblioteca, utilizando uma arquitetura cliente-servidor. Entretanto, a implementação o sistema desta vez utilizou a invocação remota de métodos da linguagem Java em vez de lidar diretamente com os \emph{sockets}.
 
 O servidor armazena as seguintes informações sobre livros:
 \begin{itemize}
@@ -96,36 +96,21 @@ O cliente pode efetuar três tipos de operações: listar todos os livros (o cli
 \section{Implementação}
 
 
-A implementação do sistema de livraria neste projeto foi bastate semelhante à implementação do Projeto 1.
-Cliente e servidor foram implementados em linguagem C, e seus códigos se encontram nos anexos 1 e 2. O banco de dados da livraria, novamente, foi implementado como um arquivo \texttt{.txt}.
-O pré-processamento utilizado foi o mesmo: o arquivo com os dados dos livros é lido pelo servidor, que armazena os dados de cada livro em um vetor de \texttt{struct livro}s.
+A implementação do sistema de livraria neste projeto foi bastate semelhante à implementação dos projetos anteriores, porém dessa vez aproveitando o nível de abstração mais alto da linguagem Java. Os códigos do cliente, do servidor e da interface para as diferentes operações com a biblioteca.
+
+A interface remota \texttt{Biblio} define os métodos que poderão ser invocados remotamente pelo cliente e as exceções remotas que estes retornam caso necessário. Suas implementações são realizadas no código do servidor, e o cliente faz as chamadas de métodos.
+
+O pré-processamento utilizado na base de dados da livraria foi bem semelhante ao das implementações em C: o arquivo \texttt{.txt} com os dados dos livros é lido pelo servidor, que armazena os dados de cada livro em um \texttt{arrayList} para cada categoria das elencadas anteriormente.
 Dessa forma, não é necessária uma nova consulta ao banco de dados a cada operação requisitada pelo cliente.
 
-Após o pré-processamento, o servidor fica na escuta em um \emph{socket} UDP, aguardando mensagens enviadas por clientes. As mensagens são tratadas iterativamente: aqui, ao contrário
-da implementação com TCP, o servidor não faz chamadas a \texttt{fork} para que processos filhos cuidem das requisições. Todas são tratadas por um mesmo
-processo, na ordem em que são recebidas.
-
-A fim de responder as requisições, o servidor varre o vetor de livros em busca dos dados
-desejados. Estes são guardados em um \emph{buffer} de mensagens que, ao
-final do processamento da operação, é enviado ao cliente pela requisição via UDP.
+Após o pré-processamento, o servidor fica no aguardo das chamadas remotas, escutando um \emph{stub} criado a partir da declaração da interface remota. Quando o cliente faz chamadas de métodos, o servidor executa suas implementações dos métodos da interface, enviando resposta de tipo adequado. Ao final da execução de um método, o servidor imprime o tempo decorrido entre o recebimento por ele da chamada e o fim da execução do método.
 
 O cliente, ao ser inicializado, fornece ao usuário um menu com as funcionalidades disponíveis
 ao programa, elencadas na Introdução e na especificação do projeto. 
 O usuário seleciona uma opção e fornece os parâmetros requeridos pela operação.
-Com base na opção selecionada e em eventuais parâmetros, o cliente constrói uma mensagem em
-\emph{buffer} específico para este fim. 
-A solicitação é então enviada para o servidor via UDP, e a mensagem de retornada é processada
-e impressa na tela.
+Com base na opção selecionada e em eventuais parâmetros, o cliente faz uma chamada a um método remoto, por meio de um \emph{stub} pelo qual ele pode chamar os métodos da interface. Ao receber a resposta, o cliente imprime o tempo decorrido entre o envio da solicitação e o recebimento do retorno.
 
-A fim de implementar a comunicação entre cliente e servidor, criamos um protocolo simples
-especificando como cada requisição e resposta deveria ser
-construída. As requisições mandam em uma única mensagem o número da operação desejada
-juntamente com ISBN e estoque, caso necessário. O servidor devolve
-como resposta uma única mensagem contendo a resposta da requisição. Tal protocolo
-facilita a contagem dos tempos de comunicação e consulta: caso cada requisição precisasse
-mandar e processar mais mensagens, servidor e cliente necessitariam armazenar e processar os
-tempos de comunicação e consulta de várias mensagem a fim de calcular o tempo tomado por
-uma única requisição.
+Para que a comunicação entre cliente e servidor funcione, é necessário executar o registro de objetos remotos do RMI, a partir do comando \texttt{rmiregistry}. É graças a ele que o cliente consegue obter a referência aos objetos remotos.
 
 \section{Vantagens e Desvantagens da Solução}
 
@@ -135,14 +120,10 @@ Ao final de sua execução, o servidor salva seus dados em disco, efetivamente a
 Como a chance de panes no servidor é relativamente baixa, os riscos associados a essa escolha são poucos, mas um sistema mais robusto salvaria os dados de uma maneira mais eficiente. 
 O uso de um sistema gerenciador de banco de dados facilitaria o tratamento desse risco.
 
-A comunicação com o protocolo UDP faz com que não haja o estabelecimento de uma conexão entre servidor e cliente, ao contrário do que ocorria na implementação em TCP, o que diminui o \emph{overhead} devido ao uso do protocolo, mas significa que não há proteção contra perda de datagramas, recebimento fora de ordem ou outros problemas na entrega dos datagramas (ou falta desta). Para lidar com tais problemas, seria necessário implementar mecanismos de controle no programa, de forma a replicar as facilidades oferecidas pelo protocolo TCP (ou um subconjunto conveniente destas).
+O emprego de constructos com maior nível de abstração simplificou bastante a implementação do código. Porém, isso se refletiu em um \emph{overhead} maior, tanto no código do cliente e do servidor em comparação com suas versões em C quanto na comunicação em RMI em comparação com os \emph{sockets}.
 
-O tamanho adotado para os \emph{buffers} foi deliberadamente elevado, para que a preocupação em partir a mensagem em blocos adequados para transmissão não estivesse no nível da aplicação, mas sim fosse jogado para camadas mais baixas. Isso tornou prática a composição dos \emph{buffers}, que certamente terão tamanho o bastante para lidar com a pequena escala do banco de dados em questão.
-
-A implementação iterativa para o servidor UDP elimina o problema de concorrência que existia no servidor TCP: como não são realizados mais \emph{forks}, não ocorre mais o problema de dois clientes tentarem alterar o estoque de um livro ao mesmo tempo.
-Como as requisições são processadas de forma sequencial, não há condição de corrida.
-
-Não foram adotadas medidas de segurança para o acesso com senha à base de dados.
+Não foram adotadas medidas de segurança para o acesso com senha à base de dados. Também no aspecto da segurança, decidiu-se não usar um \texttt{SecurityManager} no código do servidor, que serviria para a proteção dos recursos de sistema. 
+Além de apresentar um risco de segurança, isso também resulta em uma restrição das funcionalidades disponíveis, devido às medidas de segurança adotadas pelo RMI.
 
 \section{Resultados}
 
@@ -152,279 +133,243 @@ por um único cliente.
 
 O tempo de consulta é o tempo decorrido entre imediatamente após o servidor receber a requisição e imediatamente antes de ele enviar a mensagem com a resposta. O tempo total é medido desde antes do envio da mensagem pelo cliente até depois do recebimento da resposta por ele, e o tempo de comunicação é metade da diferença entre esses tempos.
 
-Como no projeto 1, o tempo de comunicação representou a maior parte do tempo total de atividade do cliente; há alguma diferença nos tempos de consulta, mas isso se deve ao fato de os servidores terem sido executados em máquinas com especificações diferentes, o que resulta em diferenças de desempenho nas operações locais.
+Como nos projetos 1 e 2, o tempo de comunicação representou a maior parte do tempo total de atividade do cliente. Para a maioria das operações, o tempo médio de comunicação foi em torno de uma ordem de grandeza maior do que os verificados com a manipulação direta de \emph{sockets}, exceto para a operação 5, em que o tipo de retorno definido pela interface é \texttt{void}; nesse caso, a implementação em RMI apresentou vantagem.
 
-Os tempos médios de comunicação verificados no projeto 2 foram, em geral, menores do que os tempos verificados para as mesmas operações realizadas no projeto 1. A operação 4, por exemplo, fica em torno de 4 vezes mais rápida na implementação realizada no projeto 2, enquanto as operações 1 e 2 ficam 2,8 e 2,7 vezes mais rápidas, respectivamente. O ganho na operação 6 foi mais modesto: o tempo de comunicação foi diminuído pela metade. Já na operação 5, que não envolve retorno para o cliente, o tempo do UDP não foi muito menor que o tempo do TCP.
-
+O tempo de consulta da implementação em Java foi superior em todos os casos, graças às diferenças entre o nível de abstração em relação ao código em C. Porém, a diferença não foi o bastante para compensar o impacto no tempo total da operação 5 da comunicação significativamente mais ágil proporcionada pelo RMI nesse caso.
 
 \section{Conclusão}
 
-Os \emph{sockets} UDP funcionam bem para a comunicação entre processos, assim como os \emph{sockets} TCP empregados no projeto anterior. 
-Em testes com mais de um cliente (feitos para verificar consistência; os resultados não foram avaliados da mesma maneira que o teste para um cliente descrito na seção anterior), o servidor iterativo não apresentou problemas para processar as mensagens recebidas e enviá-las aos destinos corretos, uma vez que o UDP especifica o "endereço de retorno" para cada datagrama. 
+Uma vez que os testes foram realizados na mesma rede e aproximadamente no mesmo horário, podemos concluir que a maior parte da diferença nos tempos de comunicação se deve às diferenças entre os protocolos, já que os niveis de uso da rede são aproximadamente os mesmos.
 
-Na rede do IC, onde foram efetuados os testes cujos resultados foram apresentados aqui, não houve uma perda significativa de datagramas. 
-Como o protocolo UDP não oferece garantias quanto à entrega dos datagramas, ao contrário do TCP, seria necessária a implementação de salvaguardas para garantir que o cliente conseguisse solicitar de novo as informações que fossem perdidas no percurso, além de um \emph{buffer} no servidor para armazenar as requisições recebidas e processá-las na ordem de recebimento.
-Porém, os alunos optaram por não realizar essas implementações neste projeto, tanto pelo sistema estar sendo usado em um contexto em que as perdas são bem pequenas (de fato, uma inspeção das saídas de teste revelou poucos erros em uma inspeção visual), mas também para evidenciar as diferenças entre as duas abordagens para comunicação.
+A diferença entre os tempos de comunicação com o UDP e com o TCP fica mais pronunciada com o aumento do tamanho da mensagem de retorno. Ainda assim, quando há efetivamente algo a se retornar, a comunicação por meio de \emph{sockets} é significativamente mais rápida do que o uso de RMI.
 
-Já que o \emph{overhead} do protocolo UDP é menor que o do TCP, uma vez que ele não estabelece conexão e não oferece várias das garantias do TCP, é esperado que o tempo de comunicação usando datagramas UDP seja menor que o tempo de comunicação com pacotes TCP, resultado verificado acima. 
-Uma vez que os testes foram realizados na mesma rede, no mesmo dia da semana e aproximadamente no mesmo horário, podemos concluir que a maior parte dessa diferença se deve às diferenças entre os protocolos, já que os niveis de uso da rede são aproximadamente os mesmos.
+Desta forma, o experimento permitiu ao grupo a visualização clara do \emph{trade-off} entre abstração e desempenho: adicionar mais camadas de abstração facilita o trabalho de desenvolvimento e implementação dos programas, mas com um impacto na velocidade de funcionamento e conexão dos programas. Usar a invocação de métodos remotos simplifica a implementação de código para a comunicação entre clientes e servidores, mas resulta em desempenho menor que aquele que pode ser obtido ao lidar com código de mais baixo nível.
 
-A diferença entre os tempos de comunicação com o UDP e com o TCP fica mais pronunciada com o aumento do tamanho da mensagem de retorno. 
-Com base na análise apresentada na seção de resultados, podemos ver que o ganho de desempenho com o UDP é pequeno no caso da operação 5, em que não há retorno de dados para o cliente, e cresce conforme o tamanho da mensagem de retorno aumenta, uma vez que os datagramas são transmitidos mais rapidamente.
 
 \section{Referências}
 
-HALL, Brian. \emph{Beej's Guide to Network Programming} -- Using Internet Sockets. Versão 3.0.15, 3 de julho de 2012. Disponível em <http://beej.us/guide/bgnet/>.
+SUN. Trail: RMI. \emph{The Java Tutorials}. Disponível em <http://docs.oracle.com/javase/tutorial/rmi/index.html>.
 
 \section*{Anexo 1: Código do Servidor}
 
 \begin{verbatim}
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <errno.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
+package example.biblio;
+	
+import java.rmi.registry.Registry;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 
-#define MYPORT "4950"    // the port users will be connecting to
+import java.util.ArrayList;
+import java.util.Arrays;
 
-#define MAXBUFLEN 100
-
-#define MAXDATASIZE 200123 // max number of bytes we can get at once
-
-#define MAXBIBSIZE 10
-
-struct livro{
-  char ISBN[14];
-  char titulo[1000];
-  char descricao[100123];
-  int estoque;
-  char autor[100];
-  char editora[100];
-  int ano;
-};
-
-// get sockaddr, IPv4 or IPv6:
-void *get_in_addr(struct sockaddr *sa)
-{
-  if (sa->sa_family == AF_INET) {
-    return &(((struct sockaddr_in*)sa)->sin_addr);
-  }
-
-  return &(((struct sockaddr_in6*)sa)->sin6_addr);
-}
-
-int main(void)
-{
-  int sockfd;
-  struct addrinfo hints, *servinfo, *p;
-  int rv;
-  int numbytes;
-  struct sockaddr_storage their_addr;
-  char buf[MAXDATASIZE];
-  socklen_t addr_len;
-  char s[INET6_ADDRSTRLEN];
-
-  memset(&hints, 0, sizeof hints);
-  hints.ai_family = AF_UNSPEC; // set to AF_INET to force IPv4
-  hints.ai_socktype = SOCK_DGRAM;
-  hints.ai_flags = AI_PASSIVE; // use my IP
-
-  if ((rv = getaddrinfo(NULL, MYPORT, &hints, &servinfo)) != 0) {
-    fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
-    return 1;
-  }
-
-  // loop through all the results and bind to the first we can
-  for(p = servinfo; p != NULL; p = p->ai_next) {
-    if ((sockfd = socket(p->ai_family, p->ai_socktype,
-                         p->ai_protocol)) == -1) {
-      perror("listener: socket");
-      continue;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Scanner;
+	
+public class Server implements Biblio {
+	
+    public Server() {
+    	preparaDados();	
     }
-
-    if (bind(sockfd, p->ai_addr, p->ai_addrlen) == -1) {
-      close(sockfd);
-      perror("listener: bind");
-      continue;
-    }
-
-    break;
-  }
-
-  if (p == NULL) {
-    fprintf(stderr, "listener: failed to bind socket\n");
-    return 2;
-  }
-
-  freeaddrinfo(servinfo);
     
-  //preprocessamento
-  struct livro biblioteca[MAXBIBSIZE];
-  char aux[MAXDATASIZE];
-  FILE *dados = fopen("dados.txt", "r");
-  int i = 0, j;
-  while(!feof(dados) ){
-    fgets(biblioteca[i].ISBN, 11, dados);
-    fgetc(dados);
-		
-    fgets(biblioteca[i].titulo, 1000, dados);
-    fgets(biblioteca[i].descricao, MAXDATASIZE-1, dados);
-		
-    fgets(aux, MAXDATASIZE, dados);
-    biblioteca[i].estoque = atoi(aux);
-		
-    fgets(biblioteca[i].autor, MAXDATASIZE-1, dados);
-		
-    fgets(biblioteca[i].editora, MAXDATASIZE-1, dados);
-		
-    fgets(aux, MAXDATASIZE-1, dados);
-    biblioteca[i].ano = atoi(aux);
-    i++;
-		
-  }
-  int total_livros = i;
-  printf("--> %d\n", total_livros);
+    //ArrayLists armazenarao banco de dados da biblioteca
+    private ArrayList<String> ISBN = new ArrayList<String> ();
+    private ArrayList<String> titulo = new ArrayList<String> ();
+    private ArrayList<String> descricao = new ArrayList<String> ();
+    private ArrayList<Integer> estoque = new ArrayList<Integer> ();
+    private ArrayList<String> autor = new ArrayList<String> ();
+    private ArrayList<String> editora = new ArrayList<String> ();
+    private ArrayList<Integer> ano = new ArrayList<Integer> ();
+    
+    //variaveis para contagem de tempo
+    long inicio = 0, fim = 0;
+    double sec;
+    
+    /*Pre-processamento: Os dados do banco serao armazenados na
+      nas 7 ArrayList declaradas acima*/
+    private void preparaDados(){
+        File file = new File("dados.txt");
+        try{
+            Scanner sc = new Scanner(file);
+            while (sc.hasNextLine()) {
+                ISBN.add(sc.nextLine());
+                titulo.add(sc.nextLine());
+                descricao.add(sc.nextLine());
+                estoque.add(Integer.parseInt(sc.nextLine()));
+                autor.add(sc.nextLine());
+                editora.add(sc.nextLine());            
+                ano.add(Integer.parseInt(sc.nextLine()));                
+            }
+            sc.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+	
+    //Operacao 1
+    public String listaISBN() {
+    	//obtem tempo inicial
+    	inicio = System.nanoTime();
+    	
+    	//processa requisicao
+    	String response = Arrays.toString(ISBN.toArray());
+    	
+    	//obtem tempo final e imprime
+    	fim = System.nanoTime();
+        sec = fim-inicio;
+        sec /= 1000000000;
+        System.out.print("Tempo da operacao: ");
+        System.out.printf("%.9f\n", sec);
 
-  addr_len = sizeof their_addr;
-  while (1) {
-    if ((numbytes = recvfrom(sockfd, buf, MAXDATASIZE-1 , 0,
-                             (struct sockaddr *)&their_addr, &addr_len)) == -1) {
-      perror("erro no recvfrom");
-      exit(1);
+        return response;
+    }
+    
+    //Operacao 2
+    public String retornaDescricao(String isbn) {
+    	//obtem tempo inicial
+    	inicio = System.nanoTime();
+    		
+    	//processa requisicao
+    	String response = new String();
+        for (int i = 0; i < ISBN.size(); i++) {
+            String str = ISBN.get(i);
+            if(str.compareTo(isbn) == 0){
+                response = descricao.get(i);
+            }
+        }
+	
+        //obtem tempo final e imprime
+    	fim = System.nanoTime();
+        sec = fim-inicio;
+        sec /= 1000000000;
+        System.out.print("Tempo da operacao: ");
+        System.out.printf("%.9f\n", sec);
+	    
+        return response;
+    }
+    
+    //Operacao 3
+     public String retornaInfo(String isbn) {
+    	//obtem tempo inicial
+    	inicio = System.nanoTime();
+   	
+    	//processa requisicao
+        String response = new String();
+        for (int i = 0; i < ISBN.size(); i++) {
+            String str = ISBN.get(i);
+            if(str.compareTo(isbn) == 0){
+                response = isbn + "\n";
+                response += titulo.get(i) + "\n";
+                response += descricao.get(i) + "\n";
+                response += estoque.get(i) + "\n";
+                response += autor.get(i) + "\n";
+                response += editora.get(i) + "\n";
+                response += ano.get(i);
+            }
+        }
+		
+        //obtem tempo final e imprime 
+    	fim = System.nanoTime();
+        sec = fim-inicio;
+        sec /= 1000000000;
+        System.out.print("Tempo da operacao: ");
+        System.out.printf("%.9f\n", sec);
+		
+        return response;
     }
 
-    int opt, cont, qte;
-    char ISBN[20];
-    char bufs[MAXDATASIZE]; // exit buffer		    	
-    int mudou = 0; // mudanca no estoque
-		    	
-    //pega tempo
-    struct timeval tempo_in, tempo_fim;
-    gettimeofday(&tempo_in, NULL);
-		    	
-    sscanf(buf, "%d", &opt);
-		    	
-    if(opt == 1){
-      bufs[0] = '\0';
-      for(i = 0; i < total_livros; ++i){
-        strcat(bufs, biblioteca[i].ISBN);
-        strcat(bufs, " ");
-        strcat(bufs, biblioteca[i].titulo);
-      }
-    }
-		    	
-    else if(opt == 2){
-      bufs[0] = '\0';
-      sscanf(buf, "%d %s", &opt, ISBN);
-      for(i = 0; i < total_livros; ++i){
-        if(strcmp(biblioteca[i].ISBN, ISBN) == 0){
-          strcat(bufs, biblioteca[i].descricao);
-          break;
-        }		    				
-      }
-    }
-		    	
-    else if(opt == 3){
-      bufs[0] = '\0';
-      sscanf(buf, "%d %s", &opt, ISBN);
-      for(i = 0; i < total_livros; ++i){
-        if(strcmp(biblioteca[i].ISBN, ISBN) == 0){
-          strcat(bufs, biblioteca[i].ISBN);
-          strcat(bufs, "\n");
-          strcat(bufs, biblioteca[i].titulo);
-          strcat(bufs, biblioteca[i].descricao);
-          sprintf(aux, "%d\n", biblioteca[i].estoque);
-          strcat(bufs, aux);
-          strcat(bufs, biblioteca[i].autor);
-          strcat(bufs, biblioteca[i].editora);
-          sprintf(aux, "%d\n", biblioteca[i].ano);
-          strcat(bufs, aux);
-          break;
-        }		    				
-      }
-    }
-		    
-    else if(opt == 4){
-      bufs[0] = '\0';
-      for(i = 0; i < total_livros; ++i){
-        strcat(bufs, biblioteca[i].ISBN);
-        strcat(bufs, "\n");
-        strcat(bufs, biblioteca[i].titulo);
-        strcat(bufs, biblioteca[i].descricao);
-        sprintf(aux, "%d\n", biblioteca[i].estoque);
-        strcat(bufs, aux);
-        strcat(bufs, biblioteca[i].autor);
-        strcat(bufs, biblioteca[i].editora);
-        sprintf(aux, "%d\n", biblioteca[i].ano);
-        strcat(bufs, aux);
-      }
-    }
-		    	
-    else if(opt == 6){
-      bufs[0] = '\0';
-      //strcat(bufs, "0 ");
-      sscanf(buf, "%d %s", &opt, ISBN);
-      for(i = 0; i < total_livros; ++i){
-        if(strcmp(biblioteca[i].ISBN, ISBN) == 0){
-          sprintf(aux, "%d\n", biblioteca[i].estoque);
-          strcat(bufs, aux);
-          break;
-        }		    				
-      }
-    }
-		    	
-    else if(opt == 5){
-      bufs[0] = '\0';
-      //strcat(bufs, "0 ");
-      sscanf(buf, "%d %s %d", &opt, ISBN, &qte);
-      mudou = 1;
-      for(i = 0; i < total_livros; ++i){
-        if(strcmp(biblioteca[i].ISBN, ISBN) == 0){
-          biblioteca[i].estoque = qte;
-          break;
-        }		    				
-      }
-    }
-       
-    //pega tempo final
-    gettimeofday(&tempo_fim, NULL);
-    double tempo1, tempo2;
-    tempo1 = tempo_in.tv_sec + 0.000001*tempo_in.tv_usec;
-    tempo2 = tempo_fim.tv_sec + 0.000001*tempo_fim.tv_usec;
-    printf("\nTempo total: %lf\n", tempo2-tempo1);
+    //operacao 4
+    public String retornaTudo() {
+    	//obtem tempo inicial
+    	inicio = System.nanoTime();
+    	
+        //processa requisicao
+        String response = new String();
+        for (int i = 0; i < ISBN.size(); i++) {
+            response += ISBN.get(i) + "\n";
+            response += titulo.get(i) + "\n";
+            response += descricao.get(i) + "\n";
+            response += estoque.get(i) + "\n";
+            response += autor.get(i) + "\n";
+            response += editora.get(i) + "\n";
+            response += ano.get(i) + "\n";          
+        }
 
-    if ((numbytes = sendto(sockfd, bufs, strlen(bufs)+1, 0,
-             (struct sockaddr *)&their_addr, addr_len)) == -1) {
-      perror("listener: sendto");
-      exit(1);
-    }                                
-				
-    if(mudou){
-      bufs[0] = '\0';
-      for(i = 0; i < total_livros-1; ++i){
-        strcat(bufs, biblioteca[i].ISBN);
-        strcat(bufs, "\n");
-        strcat(bufs, biblioteca[i].titulo);
-        strcat(bufs, biblioteca[i].descricao);
-        sprintf(aux, "%d\n", biblioteca[i].estoque);
-        strcat(bufs, aux);
-        strcat(bufs, biblioteca[i].autor);
-        strcat(bufs, biblioteca[i].editora);
-        sprintf(aux, "%d\n", biblioteca[i].ano);
-        strcat(bufs, aux);			
-      }
-      FILE *fout = fopen("dados.txt", "w");
-      fprintf(fout, "%s", bufs);
-      fclose(fout);
+        //obtem tempo final e imprime 
+    	fim = System.nanoTime();
+        sec = fim-inicio;
+        sec /= 1000000000;
+        System.out.print("Tempo da operacao: ");
+        System.out.printf("%.9f\n", sec);
+
+        return response;
+		
     }
-  }					
-  close(sockfd);
-  return 0;
+
+    //operacao 5
+    public void alteraEstoque(String isbn, int valor) {
+    	//obtem tempo inicial
+    	inicio = System.nanoTime();
+
+    	//processa requisicao
+    	String response = new String();
+        for (int i = 0; i < ISBN.size(); i++) {
+            String str = ISBN.get(i);
+            if(str.compareTo(isbn) == 0){
+                estoque.set(i, valor);
+            }
+        }
+
+        //obtem tempo final e imprime 
+    	fim = System.nanoTime();
+        sec = fim-inicio;
+        sec /= 1000000000;
+        System.out.print("Tempo da operacao: ");
+        System.out.printf("%.9f\n", sec);
+    }
+
+    //operacao 6
+    public int retornaEstoque(String isbn) {
+        int estoqueVal = 0;
+    	//obtem tempo inicial
+    	inicio = System.nanoTime();
+
+    	//processa requisicao
+    	String response = new String();
+        for (int i = 0; i < ISBN.size(); i++) {
+            String str = ISBN.get(i);
+            if(str.compareTo(isbn) == 0){
+                estoqueVal = estoque.get(i);
+            }
+        }
+
+        //obtem tempo final e imprime 
+    	fim = System.nanoTime();
+        sec = fim-inicio;
+        sec /= 1000000000;
+        System.out.print("Tempo da operacao: ");
+        System.out.printf("%.9f\n", sec);
+		
+        return estoqueVal;
+    }
+
+	
+    public static void main(String args[]) {
+	
+	try {
+	    Server obj = new Server();
+	    Biblio stub = (Biblio) UnicastRemoteObject.exportObject(obj, 0);
+
+	    // Bind the remote object's stub in the registry
+	    Registry registry = LocateRegistry.getRegistry();
+	    registry.bind("Biblio", stub);
+	    System.err.println("Server ready");
+	} catch (Exception e) {
+	    System.err.println("Server exception: " + e.toString());
+	    e.printStackTrace();
+	}
+    }
 }
 \end{verbatim}
 
@@ -432,128 +377,142 @@ int main(void)
 \section*{Anexo 2: Código do Cliente}
 
 \begin{verbatim}
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <errno.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <sys/time.h>
+package example.biblio;
 
-#define SERVERPORT "4950"    // the port users will be connecting to
-#define MAXDATASIZE 200123
+import example.biblio.Biblio;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.util.Scanner;
+import java.util.InputMismatchException;
 
-int main(int argc, char *argv[])
-{
-    int sockfd;
-    char buf[MAXDATASIZE];
-    struct addrinfo hints, *servinfo, *p;
-    struct sockaddr_storage their_addr;
-    socklen_t addr_len;
-    int rv;
-    int numbytes;
-    int estoque;
+public class Client {
 
-    if (argc != 2) {
-        fprintf(stderr,"usage: talker hostname\n");
-        exit(1);
+    private Client() {}
+
+    public static void main(String[] args) {
+
+	String host = (args.length < 1) ? null : args[0];
+	try {
+	    Registry registry = LocateRegistry.getRegistry(host);
+	    Biblio stub = (Biblio) registry.lookup("Biblio");
+            
+	    //loop de leitura do teclado e processamento das requisicoes
+	    while(true){
+                System.out.println("1- listar todos os ISBN e seus respectivos titulos");
+                System.out.println("2- dado o ISBN de um livro, retornar descricao");
+                System.out.println("3- dado o ISBN de um livro, retornar todas as informacoes do livro");
+                System.out.println("4- listar todas as informacoes de todos os livros");
+                System.out.println("5- alterar numero de exemplares em estoque");
+                System.out.println("6- dado o ISBN de um livro, retornar numero de exemplares em estoque");
+                System.out.println("7- fechar cliente");
+
+                Scanner sc = new Scanner(System.in);
+                int opt = 0;
+                try{
+                    System.out.println("Digite o numero da operacao");
+                    opt = sc.nextInt();
+                } catch (InputMismatchException e) {
+                    System.out.println("Digite o numero da operacao");
+                }
+	    	
+	    	String response = new String(); //resposta do servidor
+	    
+	    	//contagem de tempo
+	    	long inicio = 0, fim = 0;
+	    	double sec;
+	    	
+	    	if(opt == 1){
+                    //contagem de tempo e chamada
+                    inicio = System.nanoTime();
+                    response = stub.listaISBN();
+                    fim = System.nanoTime();
+	    	}
+	    	if(opt == 2){
+                    System.out.println("Digite o ISBN do livro");
+                    String isbn = sc.next();
+                    //contagem de tempo e chamada
+                    inicio = System.nanoTime();
+                    response = stub.retornaDescricao(isbn);
+                    fim = System.nanoTime();
+	    	}
+                
+	    	if(opt == 3){
+                    System.out.println("Digite o ISBN do livro");
+                    String isbn = sc.next();
+                    //contagem de tempo e chamada
+                    inicio = System.nanoTime();
+                    response = stub.retornaInfo(isbn);
+                    fim = System.nanoTime();
+	    	}
+
+                if(opt == 4){
+                    //contagem de tempo e chamada
+                    inicio = System.nanoTime();
+                    response = stub.retornaTudo();
+                    fim = System.nanoTime();
+                }
+                
+                if(opt == 5){
+                    System.out.println("Digite a senha");
+                    String senha = sc.next(); // verifica se cliente tem autorizacao
+                    if(senha.equals("senhalivraria")){
+                        System.out.println("Digite o ISBN do livro");
+                        String isbn = sc.next();
+                        System.out.println("Informe o novo valor do estoque");
+                        int valor = sc.nextInt();
+                        //contagem de tempo e chamada
+                        inicio = System.nanoTime();
+                        stub.alteraEstoque(isbn, valor);
+                        fim = System.nanoTime();
+                    }
+                    else {
+                        System.out.println("Senha invalida.");
+                    }
+                }
+
+                if(opt == 6){
+                    System.out.println("Digite o ISBN do livro");
+                    String isbn = sc.next();
+                    //contagem de tempo e chamada
+                    inicio = System.nanoTime();
+                    response += stub.retornaEstoque(isbn);
+                    fim = System.nanoTime();
+                }
+                
+                if(opt == 7){
+                    System.exit(0);
+                }
+	    	
+	    	System.out.println(response);
+	    	sec = fim-inicio;
+	    	sec /= 1000000000;
+	    	System.out.print("Tempo da operacao: ");
+	    	System.out.printf("%.9f\n", sec);
+	    }
+            
+	    
+	} catch (Exception e) {
+	    System.err.println("Client exception: " + e.toString());
+	    e.printStackTrace();
+	}
     }
+}
+\end{verbatim}
 
-    memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_DGRAM;
+\section*{Anexo 3: Código da Interface}
+\begin{verbatim}
+package example.biblio;
 
-    if ((rv = getaddrinfo(argv[1], SERVERPORT, &hints, &servinfo)) != 0) {
-        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
-        return 1;
-    }
+import java.rmi.Remote;
+import java.rmi.RemoteException;
 
-    // loop through all the results and make a socket
-    for(p = servinfo; p != NULL; p = p->ai_next) {
-        if ((sockfd = socket(p->ai_family, p->ai_socktype,
-                p->ai_protocol)) == -1) {
-            perror("talker: socket");
-            continue;
-        }
-
-        break;
-    }
-
-    if (p == NULL) {
-        fprintf(stderr, "talker: failed to bind socket\n");
-        return 2;
-    }	
-    int opt, cont;
-    char ISBN[20];
-    char msg[MAXDATASIZE];
-    char pass[20];
-    int bytes_sent, len, bytes_rcv;
-    while(1){
-      ISBN[0] = '\0';
-      //pseudo user interface
-      printf("Escolha uma opcao:\n");
-      printf("1- listar todos os ISBN e seus respectivos titulos\n");
-      printf("2- dado o ISBN de um livro, retornar descricao\n");
-      printf("3- dado o ISBN de um livro, retornar todas as informacoes do livro\n");
-      printf("4- listar todas as informacoes de todos os livros\n");
-      printf("5- alterar numero de exemplares em estoque\n");
-      printf("6- dado o ISBN de um livro, retornar numero de exemplares em estoque\n");
-      printf("7- fechar cliente\n");
-      scanf("%d", &opt);
-      if(opt == 7) break;
-      if(opt == 5){
-        printf("Digite a senha\n");
-        scanf(" %s", pass);
-        if(strcmp(pass, "senhalivraria") != 0)
-          continue;
-        else{  
-          printf("Digite o ISBN\n");
-          scanf(" %s", ISBN);
-          printf("Digite o novo valor do estoque\n");
-          scanf("%d", &estoque);
-        }
-      }
-      if(opt == 2 || opt == 3 || opt == 6){
-        printf("Digite o ISBN\n");
-        scanf(" %s", ISBN);
-      }
-		
-      //escreve requisicao
-      if (opt == 5) sprintf(msg, "%d %s %d", opt, ISBN, estoque);
-      else sprintf(msg, "%d %s", opt, ISBN);  
-		
-       //pega tempo inicial
-       struct timeval tempo_in, tempo_fim;
-       gettimeofday(&tempo_in, NULL);
-		
-        len = strlen(msg);
-        if ((numbytes = sendto(sockfd, msg, len, 0,
-        p->ai_addr, p->ai_addrlen)) == -1) {
-          perror("talker: sendto");
-          exit(1);
-        }
-        //le resultado
-        addr_len = sizeof their_addr;
-        if ((numbytes = recvfrom(sockfd, buf, MAXDATASIZE-1 , 0,
-	        (struct sockaddr *)&their_addr, &addr_len)) == -1) {
-        perror("erro no recvfrom");
-        exit(1);
-      }    		
-      sscanf(buf, "%d", &cont);    		    
-      printf("%s", buf);
-      gettimeofday(&tempo_fim, NULL);
-      double tempo1, tempo2;
-      tempo1 = tempo_in.tv_sec + 0.000001*tempo_in.tv_usec;
-      tempo2 = tempo_fim.tv_sec + 0.000001*tempo_fim.tv_usec;
-      printf("\nTempo total: %lf\n", tempo2-tempo1);
-    }
-    freeaddrinfo(servinfo);
-    close(sockfd);
-    return 0;
+public interface Biblio extends Remote {
+    String listaISBN() throws RemoteException;
+    String retornaDescricao(String isbn) throws RemoteException;
+    String retornaInfo(String isbn) throws RemoteException;
+    String retornaTudo() throws RemoteException;
+    void alteraEstoque(String isbn, int valor) throws RemoteException;
+    int retornaEstoque(String isbn) throws RemoteException;
 }
 \end{verbatim}
 \end{document}
